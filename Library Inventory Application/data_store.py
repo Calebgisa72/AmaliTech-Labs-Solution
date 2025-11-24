@@ -1,9 +1,11 @@
 from typing import Dict
 from book import Book,Textbook, Audiobook
 from author import Author
+from loan import Loan
 
 books: Dict[int, Book] = {}
 authors: Dict[int, Author] = {}
+loans: Dict[int, Loan] = {}
 
 def sample_books():
     books.clear()

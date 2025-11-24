@@ -46,7 +46,6 @@ class Book(ABC):
         status = Book.check_availability(self.available)
         return f"{self.book_id} - {self.title} ({self.genre}) - {status}"
 
-
 class Textbook(Book):
     def __init__(self, title: str, year: int, author: Author):
         super().__init__(title, year, Genre.TEXTBOOK)
