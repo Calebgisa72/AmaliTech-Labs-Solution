@@ -21,14 +21,6 @@ class Employee:
 
 
 class FullTimeEmployee(Employee):
-    """
-    Full time staff:
-    - monthly_salary: base monthly salary
-    - bonus: absolute amount (validated via property)
-    - overtime_hours: number
-    - overtime_rate: per hour
-    - tax_rate: percentage (validated via property)
-    """
 
     def __init__(
         self,
@@ -64,18 +56,12 @@ class FullTimeEmployee(Employee):
         return self._tax_rate
 
     @tax_rate.setter
-    def tax_rate(self, value: float):
+    def tax_rate(self, value: float) -> None:
         if not (0.0 <= float(value) <= 1.0):
             raise ValueError("Tax rate must be between 0.0 and 1.0 (e.g., 0.15 for 15%).")
         self._tax_rate = float(value)
 
     def calculate_pay(self) -> dict:
-        """
-        Compute gross pay = salary + bonus + overtime
-        taxes = gross_pay * tax_rate
-        net_pay = gross - taxes
-        Returns a payslip dictionary.
-        """
         overtime_pay = self.overtime_hours * self.overtime_rate
         gross = self.monthly_salary + self.bonus + overtime_pay
 
@@ -99,12 +85,6 @@ class FullTimeEmployee(Employee):
 
 
 class ContractEmployee(Employee):
-    """
-    Contract staff:
-    - hourly_rate
-    - hours_worked
-    - tax_rate (flat)
-    """
 
     def __init__(self, name: str, hourly_rate: float, hours_worked: float = 0.0, tax_rate: float = 0.10):
         super().__init__(name, "Contract")
@@ -142,10 +122,6 @@ class ContractEmployee(Employee):
 
 
 class Intern(Employee):
-    """
-    Intern: fixed stipend or unpaid (stipend default 0)
-    Typically no taxes or very small tax (we'll keep taxes 0 by default).
-    """
 
     def __init__(self, name: str, stipend: float = 0.0):
         super().__init__(name, "Intern")

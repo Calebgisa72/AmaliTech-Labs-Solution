@@ -9,7 +9,7 @@ def main():
 
     while True:
         print("\nSystem Menu:")
-        print("1. Populate sample employees")
+        print("1. Start with sample employees")
         print("2. Add an employee")
         print("3. List employees")
         print("4. Generate payslip for an employee")
