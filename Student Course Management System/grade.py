@@ -43,7 +43,7 @@ class Grade:
             if course_code in marks_dict:
                 found = True
                 student_name = students[sid].name
-                print(f"   - {student_name}: {marks_dict[course_code]}")
+                print(f" - {student_name}: {marks_dict[course_code]}")
 
         if not found:
             print("No marks found for this course.")
