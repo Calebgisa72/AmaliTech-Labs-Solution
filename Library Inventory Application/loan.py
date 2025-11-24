@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from data_store import books
 from borrower import Borrower
 
-
 class Loan:
     _charge_per_day: float = 300
 

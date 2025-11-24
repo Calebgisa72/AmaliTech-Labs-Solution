@@ -1,20 +1,21 @@
-# main.py
-
 from data_store import books, authors, loans
-from book import Textbook, Audiobook, Genre, Book
+from book import Textbook, Audiobook
 from author import Author
 from loan import Loan
-from utils import get_int, get_float
-from typing import Optional
+from utils import get_int
 
 
-def list_all_books():
+def list_all_books(withDetails: bool = False):
     if not books:
         print("\nNo books found.")
         return
     print("\n=== All Books ===")
     for b in books.values():
-        print(b)
+        if withDetails:
+            print(f"\n{b.book_info()}")
+            print("-------------------")
+        else:
+            print(b)
 
 
 def list_all_authors():
@@ -71,7 +72,6 @@ def add_book():
     year = get_int("Enter year of publication: ")
 
     if choice == "1":
-        # choose author
         if not authors:
             print("No authors available. Add an author first!")
             return
@@ -213,7 +213,7 @@ def edit_book():
 def main():
     print("---WELCOME TO LIBRARY INVENTORY---")
     while True:
-        print("1. Add Book")
+        print("\n1. Add Book")
         print("2. Add Author")
         print("3. Loan a Book")
         print("4. Return a Book")
@@ -223,7 +223,8 @@ def main():
         print("8. List All Loans")
         print("9. Delete Book")
         print("10. Edit Book")
-        print("11. Exit")
+        print("11. Start with sample books and authors")
+        print("12. Exit")
         print("========================================")
 
         choice = input("Enter choice: ")
@@ -239,7 +240,7 @@ def main():
         elif choice == "5":
             search_books()
         elif choice == "6":
-            list_all_books()
+            list_all_books(withDetails=True)
         elif choice == "7":
             list_all_authors()
         elif choice == "8":
@@ -249,6 +250,11 @@ def main():
         elif choice == "10":
             edit_book()
         elif choice == "11":
+            from data_store import sample_books
+
+            sample_books()
+            print("Sample authors and books added.")
+        elif choice == "12":
             print("Goodbye!")
             break
         else:
