@@ -28,7 +28,7 @@ class Book(ABC):
     def book_info(self) -> Dict:
         pass
 
-    @abstractmethod   
+    @abstractmethod
     def update_book(self) -> None:
         pass
 
@@ -44,7 +44,8 @@ class Book(ABC):
 
     def __str__(self) -> str:
         status = Book.check_availability(self.available)
-        return f"{self.book_id} - {self.title} ({self.genre}) - {status}"
+        return f"{self.book_id} - {self.title} ({self.genre.value}) - {status}"
+
 
 class Textbook(Book):
     def __init__(self, title: str, year: int, author: Author):
@@ -56,7 +57,7 @@ class Textbook(Book):
             "book_id": self.book_id,
             "status": Book.check_availability(self.available),
             "title": self.title,
-            "Genre": Genre.TEXTBOOK,
+            "genre": Genre.TEXTBOOK.value,
             "year_of_publication": self.year,
             "author_details": {
                 "author_id": self.author.author_id,
@@ -64,49 +65,39 @@ class Textbook(Book):
                 "nationality": self.author.nationality,
             },
         }
-        
+
     def update_book(self, **kwargs) -> None:
-        editable_fields = {
-            "title",
-            "year",
-            "author",
-        }
+        editable_fields = {"title", "year", "author"}
 
         for field, value in kwargs.items():
             if field in editable_fields:
                 setattr(self, field, value)
             else:
-                print(f"Warning: '{field}' is not a valid field for Textbook and was ignored.")
+                print(f"Warning: '{field}' is not valid for Textbook.")
+
 
 class Audiobook(Book):
     def __init__(self, title: str, year: int, duration_sec: int, narrator_name: str):
-        super().__init__(title, year, Genre.TEXTBOOK)
+        super().__init__(title, year, Genre.AUDIOBOOK)
         self.duration_sec = duration_sec
         self.narrator_name = narrator_name
-    
+
     def book_info(self) -> Dict:
         return {
             "book_id": self.book_id,
             "status": Book.check_availability(self.available),
             "title": self.title,
-            "Genre": Genre.AUDIOBOOK,
+            "genre": Genre.AUDIOBOOK.value,
             "year_of_publication": self.year,
-            "duration_sec": format_time(self.duration_sec),
+            "duration": format_time(self.duration_sec),
             "narrator_name": self.narrator_name,
         }
-    
+
     def update_book(self, **kwargs) -> None:
-        editable_fields = {
-            "title",
-            "year",
-            "duration_sec",
-            "narrator_name",
-        }
+        editable_fields = {"title", "year", "duration_sec", "narrator_name"}
 
         for field, value in kwargs.items():
             if field in editable_fields:
                 setattr(self, field, value)
             else:
-                print(f"Warning: '{field}' is not a valid field for Audiobook and was ignored.")
-
-    
+                print(f"Warning: '{field}' is not valid for Audiobook.")

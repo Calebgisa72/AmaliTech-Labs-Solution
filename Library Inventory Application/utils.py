@@ -1,5 +1,3 @@
-# from data_store import
-
 def get_int(prompt: str, error: str = "Please enter a valid integer!") -> int:
     while True:
         try:
