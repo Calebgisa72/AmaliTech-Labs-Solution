@@ -1,4 +1,6 @@
-class Employee:
+from abc import ABC, abstractmethod
+
+class Employee(ABC):
 
     _next_id = 1
 
@@ -13,8 +15,9 @@ class Employee:
         self.name: str = name
         self.role: str = role
 
+    @abstractmethod
     def calculate_pay(self) -> dict:
-        raise NotImplementedError("Subclasses must implement calculate_pay()")
+        pass
 
     def __str__(self) -> str:
         return f"{self.employee_id} - {self.name} ({self.role})"
@@ -58,7 +61,7 @@ class FullTimeEmployee(Employee):
     @tax_rate.setter
     def tax_rate(self, value: float) -> None:
         if not (0.0 <= float(value) <= 1.0):
-            raise ValueError("Tax rate must be between 0.0 and 1.0 (e.g., 0.15 for 15%).")
+            raise ValueError("Tax rate must be between 0.0 and 1.0 (Ex: 0.15 for 15%).")
         self._tax_rate = float(value)
 
     def calculate_pay(self) -> dict:
