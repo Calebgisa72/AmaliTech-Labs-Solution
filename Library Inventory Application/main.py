@@ -225,7 +225,7 @@ def main():
         print("10. Edit Book")
         print("11. Start with sample books and authors")
         print("12. Exit")
-        print("========================================")
+        print("================")
 
         choice = input("Enter choice: ")
 
