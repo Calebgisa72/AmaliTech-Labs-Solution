@@ -6,6 +6,7 @@ class Grade:
 
     def add_student_marks(self, student_id, course_code, marks: float):
         self.grades.setdefault(student_id, {})[course_code] = marks
+        self._marks = 0.0
 
     def get_students_marks(self, student_id):
         if not self.grades:

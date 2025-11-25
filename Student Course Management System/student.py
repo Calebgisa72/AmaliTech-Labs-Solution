@@ -1,4 +1,7 @@
-class Student:
+from abc import ABC, abstractmethod
+from typing import Any
+
+class Student(ABC):
     _next_id = 1
 
     def __init__(self, name):
@@ -12,6 +15,10 @@ class Student:
 
     def __str__(self):
         return f"{self.student_id} - {self.name} ({self.level})"
+    
+    @abstractmethod
+    def get_student_details(self) -> dict[str, Any]:
+        pass
 
     @classmethod
     def generate_id(cls):
@@ -24,7 +31,22 @@ class GraduateStudent(Student):
     def __init__(self, thesis_topic, name):
         super().__init__(name)
         self.thesis_topic = thesis_topic
+    
+    def get_student_details(self) -> dict[str, Any]:
+        return {
+            "student_id": self.student_id,
+            "name": self.name,
+            "level": self.level,
+            "thesis_topic": self.thesis_topic
+        }
 
 
 class UndergraduateStudent(Student):
-    pass
+    def __init__(self, name):
+        super().__init__(name)
+    def get_student_details(self) -> dict[str, Any]:
+        return {
+            "student_id": self.student_id,
+            "name": self.name,
+            "level": self.level
+        }

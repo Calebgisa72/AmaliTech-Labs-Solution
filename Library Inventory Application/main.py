@@ -12,8 +12,10 @@ def list_all_books(withDetails: bool = False):
     print("\n=== All Books ===")
     for b in books.values():
         if withDetails:
-            print(f"\n{b.book_info()}")
-            print("-------------------")
+            info = b.book_info()
+            for k, v in info.items():
+                print(f"{k.capitalize()}: {v}")
+                print("-------------------")
         else:
             print(b)
 
