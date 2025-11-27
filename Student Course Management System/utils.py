@@ -11,3 +11,11 @@ def get_float(prompt: str):
             return float(input(prompt))
         except ValueError:
             print("Enter valid marks!")
+            
+def get_non_empty_string(prompt: str):
+    while True:
+        value = input(prompt).strip()
+        if value:
+            return value
+        else:
+            print("Input cannot be empty. Please enter a valid value.")

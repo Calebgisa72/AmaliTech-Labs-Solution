@@ -17,6 +17,11 @@ class Employee(ABC):
 
     @abstractmethod
     def calculate_pay(self) -> dict:
+        """
+        Return a dictionary with computed payslip values.
+        Subclasses must override this.
+        Example return keys: gross_pay, taxes, net_pay, details
+        """
         pass
 
     def __str__(self) -> str:
@@ -24,6 +29,11 @@ class Employee(ABC):
 
 
 class FullTimeEmployee(Employee):
+    
+    '''
+    overview:    Represents a full-time employee with salary, bonus, overtime, and tax details. 
+    attributes: 
+    '''
 
     def __init__(
         self,
@@ -48,7 +58,7 @@ class FullTimeEmployee(Employee):
     def bonus(self) -> float:
         return self._bonus
 
-    @bonus.setter
+    @bonus.setter # Validates the bonus to be non-negative
     def bonus(self, value: float):
         if value < 0:
             raise ValueError("Bonus cannot be negative.")
@@ -65,6 +75,12 @@ class FullTimeEmployee(Employee):
         self._tax_rate = float(value)
 
     def calculate_pay(self) -> dict:
+        """
+        Compute gross pay = salary + bonus + overtime
+        taxes = gross_pay * tax_rate
+        net_pay = gross - taxes
+        Returns a payslip dictionary.
+        """
         overtime_pay = self.overtime_hours * self.overtime_rate
         gross = self.monthly_salary + self.bonus + overtime_pay
 
@@ -88,6 +104,12 @@ class FullTimeEmployee(Employee):
 
 
 class ContractEmployee(Employee):
+    """
+    Contract staff:
+    - hourly_rate
+    - hours_worked
+    - tax_rate
+    """
 
     def __init__(self, name: str, hourly_rate: float, hours_worked: float = 0.0, tax_rate: float = 0.10):
         super().__init__(name, "Contract")
@@ -125,6 +147,10 @@ class ContractEmployee(Employee):
 
 
 class Intern(Employee):
+    """
+    Intern: fixed stipend or unpaid (stipend default 0)
+    Typically no taxes or very small tax (we'll keep taxes 0 by default).
+    """
 
     def __init__(self, name: str, stipend: float = 0.0):
         super().__init__(name, "Intern")

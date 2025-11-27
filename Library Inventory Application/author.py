@@ -1,10 +1,10 @@
 class Author():
-    next_id = 1
+    _next_id = 1
     
     @classmethod
     def generate_id(cls) -> int:
-        aid = cls.next_id
-        cls.next_id += 1
+        aid = cls._next_id
+        cls._next_id += 1
         return aid
     
     def __init__(self, name: str, nationality: str) -> None:

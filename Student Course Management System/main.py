@@ -4,7 +4,8 @@ from student import GraduateStudent, UndergraduateStudent
 from course import Course
 from enrollment import Enrollment
 from data_store import students, courses
-from utils import get_int, get_float
+from utils import get_int, get_float, get_non_empty_string
+
 
 def choose_level(label: str) -> int:
     """Choose undergraduate or graduate level."""
@@ -17,6 +18,7 @@ def choose_level(label: str) -> int:
             return level_choice
         print("Invalid choice!")
 
+
 def show_all_student_ids():
     """Print a list of all registered students."""
     print("\nAvailable Students:")
@@ -25,6 +27,7 @@ def show_all_student_ids():
         return
     for student in students.values():
         print(student)
+
 
 def get_student_courses(student_id: int):
     """Return all courses matching a student's level."""
@@ -36,29 +39,32 @@ def get_student_courses(student_id: int):
         return None
     return filtered
 
+
 def add_student():
     level = choose_level("student")
 
     if level == 2:
-        topic = input("\nEnter thesis topic: ")
-        name = input("Enter student name: ")
+        topic = get_non_empty_string("\nEnter thesis topic: ")
+        name = get_non_empty_string("Enter student name: ")
         student = GraduateStudent(topic, name)
     else:
-        name = input("Enter student name: ")
+        name = get_non_empty_string("Enter student name: ")
         student = UndergraduateStudent(name)
 
     students[student.student_id] = student
     print(f"Student added successfully! Assigned ID = {student.student_id}")
 
+
 def add_course():
     level = choose_level("course")
 
-    code = input("\nEnter course code: ").upper()
-    title = input("Enter course title: ")
+    code = get_non_empty_string("\nEnter course code: ").upper()
+    title = get_non_empty_string("Enter course title: ")
     level_name = "Undergraduate" if level == 1 else "Graduate"
 
     courses[code] = Course(code, title, level_name)
     print("Course added successfully!")
+
 
 def enroll_student(enrollment: Enrollment):
     show_all_student_ids()
@@ -76,7 +82,7 @@ def enroll_student(enrollment: Enrollment):
     for c in available:
         print(f" - {c.code}: {c.title}")
 
-    code = input("Enter course code to enroll: ").upper()
+    code = get_non_empty_string("Enter course code to enroll: ").upper()
 
     if code not in courses:
         print("Course not found!")
@@ -84,6 +90,7 @@ def enroll_student(enrollment: Enrollment):
 
     enrollment.enroll(students[sid], courses[code])
     print("Enrollment successful!")
+
 
 def assign_grade(enrollment: Enrollment, grade: Grade):
     show_all_student_ids()
@@ -101,9 +108,13 @@ def assign_grade(enrollment: Enrollment, grade: Grade):
     for c in available:
         print(f" - {c.code}: {c.title}")
 
-    code = input("Enter course code: ").upper()
+    code = get_non_empty_string("Enter course code: ").upper()
 
-    if sid not in enrollment.records or courses[code] not in enrollment.records[sid]:
+    if (
+        sid not in enrollment.records
+        or code not in courses
+        or courses[code] not in enrollment.records[sid]
+    ):
         print("First enroll this student in this course!")
         return
 
@@ -111,19 +122,22 @@ def assign_grade(enrollment: Enrollment, grade: Grade):
     grade.add_student_marks(sid, code, marks)
     print("Marks added successfully!")
 
+
 def show_student_marks(grade: Grade):
     show_all_student_ids()
     sid = get_int("\nEnter student ID: ")
     grade.get_students_marks(sid)
 
+
 def show_course_marks(grade: Grade):
-    code = input("\nEnter course code: ").upper()
+    code = get_non_empty_string("\nEnter course code: ").upper()
 
     if code not in courses:
         print("Course not found!")
         return
 
     grade.get_course_student_marks(code)
+
 
 def list_students():
     if not students:
@@ -134,6 +148,7 @@ def list_students():
     for s in students.values():
         print(f" {s}")
 
+
 def list_courses():
     if not courses:
         print("No courses found.")
@@ -142,6 +157,7 @@ def list_courses():
     print("\n--- All Courses ---")
     for c in courses.values():
         print(f" - {c}")
+
 
 def get_student_details():
     show_all_student_ids()
@@ -156,6 +172,7 @@ def get_student_details():
     print("\n--- Student Details ---")
     for k, v in details.items():
         print(f"{k.capitalize()}: {v}")
+
 
 def main():
     enrollment = Enrollment()
@@ -179,21 +196,32 @@ def main():
 
         choice = input("Choose an option: ")
 
-        if choice == "1": add_student()
-        elif choice == "2": add_course()
-        elif choice == "3": enroll_student(enrollment)
-        elif choice == "4": enrollment.print_records()
-        elif choice == "5": assign_grade(enrollment, grade)
-        elif choice == "6": show_student_marks(grade)
-        elif choice == "7": show_course_marks(grade)
-        elif choice == "8": list_students()
-        elif choice == "9": list_courses()
-        elif choice == "10": get_student_details()
+        if choice == "1":
+            add_student()
+        elif choice == "2":
+            add_course()
+        elif choice == "3":
+            enroll_student(enrollment)
+        elif choice == "4":
+            enrollment.print_records()
+        elif choice == "5":
+            assign_grade(enrollment, grade)
+        elif choice == "6":
+            show_student_marks(grade)
+        elif choice == "7":
+            show_course_marks(grade)
+        elif choice == "8":
+            list_students()
+        elif choice == "9":
+            list_courses()
+        elif choice == "10":
+            get_student_details()
         elif choice == "11":
             print("Goodbye!")
             break
         else:
             print("Invalid choice!")
+
 
 if __name__ == "__main__":
     main()

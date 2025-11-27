@@ -9,12 +9,12 @@ class Genre(Enum):
     AUDIOBOOK = "Audiobook"
 
 class Book(ABC):
-    next_id = 1
+    _next_id = 1
 
     @classmethod
     def generate_id(cls) -> int:
-        bid = cls.next_id
-        cls.next_id += 1
+        bid = cls._next_id
+        cls._next_id += 1
         return bid
 
     def __init__(self, title: str, year: int, genre: Genre, available: bool = True):

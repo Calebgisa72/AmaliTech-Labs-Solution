@@ -3,9 +3,9 @@ from employee import Employee, FullTimeEmployee, ContractEmployee, Intern
 
 employees: Dict[int, Employee] = {}
 
-
+# Function that generate sample employees
 def sample_employees():
-    employees.clear()
+    employees.clear() # First clear the employee dictionary
 
     ft = FullTimeEmployee("Caleb Gisa", monthly_salary=3000.0, bonus=200.0, overtime_hours=10, overtime_rate=15.0, tax_rate=0.18)
     employees[ft.employee_id] = ft

@@ -1,10 +1,10 @@
 class Borrower:
-    next_id = 1
+    _next_id = 1
 
     @classmethod
     def generate_id(cls) -> int:
-        bid = cls.next_id
-        cls.next_id += 1
+        bid = cls._next_id
+        cls._next_id += 1
         return bid
     
     def __init__ (self, name: str, telephone: str):
