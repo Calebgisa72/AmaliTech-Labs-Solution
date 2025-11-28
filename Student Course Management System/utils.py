@@ -18,4 +18,4 @@ def get_non_empty_string(prompt: str):
         if value:
             return value
         else:
-            print("Input cannot be empty. Please enter a valid value.")
+            print("Input cannot be empty. Please enter a valid value")

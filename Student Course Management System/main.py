@@ -28,7 +28,6 @@ def show_all_student_ids():
     for student in students.values():
         print(student)
 
-
 def get_student_courses(student_id: int):
     """Return all courses matching a student's level."""
     student = students[student_id]
