@@ -1,0 +1,14 @@
+[
+  {
+    "loan_id": 1,
+    "book_id": 1,
+    "borrower": {
+      "borrower_id": 1,
+      "name": "Mugisha Pacifique",
+      "telephone": "0780288983"
+    },
+    "loan_date": "2025-11-28T17:21:03.839225",
+    "returned_date": null,
+    "status": "active"
+  }
+]
