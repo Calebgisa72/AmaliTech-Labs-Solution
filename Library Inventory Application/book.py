@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict
+from typing import Any, Dict
 from author import Author
 from enum import Enum
 from utils import format_time
@@ -31,6 +31,10 @@ class Book(ABC):
     @abstractmethod
     def update_book(self) -> None:
         pass
+    
+    @abstractmethod
+    def to_dict(self) -> Dict[str, Any]:
+        pass
 
     def mark_as_checked_out(self) -> None:
         self.available = False
@@ -45,6 +49,15 @@ class Book(ABC):
     def __str__(self) -> str:
         status = Book.check_availability(self.available)
         return f"{self.book_id} - {self.title} ({self.genre.value}) - {status}"
+
+    def base_dict(self) -> Dict:
+        return {
+            "book_id": self.book_id,
+            "title": self.title,
+            "year": self.year,
+            "genre": self.genre.value,
+            "available": bool(self.available),
+        }
 
 
 class Textbook(Book):
@@ -75,6 +88,24 @@ class Textbook(Book):
             else:
                 print(f"Warning: '{field}' is not valid for Textbook.")
 
+    def to_dict(self) -> Dict:
+        base = self.base_dict()
+        base.update({
+            "author_id": self.author.author_id
+        })
+        return base
+
+    @classmethod
+    def from_dict(cls, d: Dict, author: Author):
+        obj = cls.__new__(cls)
+        obj.book_id = int(d["book_id"])
+        obj.title = d["title"]
+        obj.year = int(d["year"])
+        obj.available = bool(d.get("available", True))
+        obj.genre = Genre.TEXTBOOK
+        obj.author = author
+        return obj
+
 
 class Audiobook(Book):
     def __init__(self, title: str, year: int, duration_sec: int, narrator_name: str):
@@ -101,3 +132,24 @@ class Audiobook(Book):
                 setattr(self, field, value)
             else:
                 print(f"Warning: '{field}' is not valid for Audiobook.")
+
+    # Serialization
+    def to_dict(self) -> Dict:
+        base = self.base_dict()
+        base.update({
+            "duration_sec": int(self.duration_sec),
+            "narrator_name": self.narrator_name
+        })
+        return base
+
+    @classmethod
+    def from_dict(cls, d: Dict):
+        obj = cls.__new__(cls)
+        obj.book_id = int(d["book_id"])
+        obj.title = d["title"]
+        obj.year = int(d["year"])
+        obj.available = bool(d.get("available", True))
+        obj.genre = Genre.AUDIOBOOK
+        obj.duration_sec = int(d.get("duration_sec", 0))
+        obj.narrator_name = d.get("narrator_name", "")
+        return obj

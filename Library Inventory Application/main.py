@@ -2,7 +2,8 @@ from data_store import books, authors, loans
 from book import Textbook, Audiobook
 from author import Author
 from loan import Loan
-from utils import get_int
+from utils import get_int, get_non_empty_string
+import storage
 
 
 def list_all_books(withDetails: bool = False):
@@ -15,10 +16,9 @@ def list_all_books(withDetails: bool = False):
             info = b.book_info()
             for k, v in info.items():
                 print(f"{k.capitalize()}: {v}")
-                print("-------------------")
+            print("-------------------")
         else:
             print(b)
-
 
 def list_all_authors():
     if not authors:
@@ -28,15 +28,27 @@ def list_all_authors():
     for a in authors.values():
         print(a)
 
-
 def list_all_loans():
     if not loans:
         print("\nNo loans found.")
         return
-    print("\n=== All Loans ===")
-    for l in loans.values():
-        print(l)
 
+    print("\nShow loans:")
+    print("1. Active loans only")
+    print("2. All loans")
+    choice = input("Choose (1/2): ").strip()
+    if choice == "1":
+        items = [l for l in loans.values() if l.status == "active"]
+    else:
+        items = list(loans.values())
+
+    if not items:
+        print("No loans match the selection.")
+        return
+
+    print("\n=== Loans ===")
+    for l in items:
+        print(l)
 
 def search_books():
     print("\n=== Search Books ===")
@@ -52,28 +64,27 @@ def search_books():
     for r in results:
         print(r)
 
-
 def add_author():
     print("\n=== Add Author ===")
-    name = input("Enter author name: ")
-    nationality = input("Enter nationality: ")
+    name = get_non_empty_string("Enter author name: ")
+    nationality = get_non_empty_string("Enter nationality: ")
 
     a = Author(name, nationality)
     authors[a.author_id] = a
+    storage.save_authors()
     print(f"Author added successfully with ID {a.author_id}")
-
 
 def add_book():
     print("\n=== Add Book ===")
     print("1. Textbook")
     print("2. Audiobook")
 
-    choice = input("Choose book type: ")
+    choice = get_int("Choose book type: ", error="Please enter 1 or 2.")
 
-    title = input("Enter title: ")
+    title = get_non_empty_string("Enter title: ")
     year = get_int("Enter year of publication: ")
 
-    if choice == "1":
+    if choice == 1:
         if not authors:
             print("No authors available. Add an author first!")
             return
@@ -87,9 +98,9 @@ def add_book():
 
         book = Textbook(title, year, authors[a_id])
 
-    elif choice == "2":
+    elif choice == 2:
         duration = get_int("Enter duration in seconds: ")
-        narrator = input("Enter narrator name: ")
+        narrator = get_non_empty_string("Enter narrator name: ")
         book = Audiobook(title, year, duration, narrator)
 
     else:
@@ -97,8 +108,8 @@ def add_book():
         return
 
     books[book.book_id] = book
+    storage.save_books()
     print(f"Book added successfully with ID {book.book_id}")
-
 
 def loan_book():
     print("\n=== Loan Book ===")
@@ -113,30 +124,37 @@ def loan_book():
         print("Book is already loaned out.")
         return
 
-    borrower_name = input("Enter borrower's name: ")
-    borrower_tel = input("Enter borrower's telephone: ")
+    borrower_name = get_non_empty_string("Enter borrower's name: ")
+    borrower_tel = get_non_empty_string("Enter borrower's telephone: ")
 
     ln = Loan(b_id, borrower_name, borrower_tel)
-    loans[b_id] = ln
-
-    print("Book loaned successfully.")
-
+    loans[ln.loan_id] = ln
+    storage.save_loans()
+    storage.save_books()  # book availability changed
+    print(f"Book loaned successfully. Loan ID: {ln.loan_id}")
 
 def return_book():
     print("\n=== Return Book ===")
     if not loans:
-        print("No active loans.")
+        print("No loans available.")
         return
 
     list_all_loans()
     b_id = get_int("\nEnter book ID to return: ")
 
-    if b_id not in loans:
-        print("No loan found for this book.")
+    found = None
+    for l in loans.values():
+        if l.book_id == b_id and l.status == "active":
+            found = l
+            break
+
+    if not found:
+        print("No active loan found for this book.")
         return
 
-    loans[b_id].return_book()
-    # del loans[b_id]
+    found.return_book()
+    storage.save_loans()
+    storage.save_books()
 
 
 def delete_book():
@@ -153,6 +171,7 @@ def delete_book():
         return
 
     del books[b_id]
+    storage.save_books()
     print("Book deleted successfully.")
 
 
@@ -207,12 +226,14 @@ def edit_book():
 
     if updates:
         book.update_book(**updates)
+        storage.save_books()
         print("Book updated successfully.")
     else:
         print("No changes applied.")
 
 
 def main():
+    storage.load_all()
     print("---WELCOME TO LIBRARY INVENTORY---")
     while True:
         print("\n1. Add Book")
@@ -225,8 +246,7 @@ def main():
         print("8. List All Loans")
         print("9. Delete Book")
         print("10. Edit Book")
-        print("11. Start with sample books and authors")
-        print("12. Exit")
+        print("11. Exit")
         print("================")
 
         choice = input("Enter choice: ")
@@ -252,11 +272,6 @@ def main():
         elif choice == "10":
             edit_book()
         elif choice == "11":
-            from data_store import sample_books
-
-            sample_books()
-            print("Sample authors and books added.")
-        elif choice == "12":
             print("Goodbye!")
             break
         else:

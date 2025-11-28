@@ -1,0 +1,19 @@
+[
+  {
+    "book_id": 1,
+    "title": "Into the Badlands",
+    "year": 2018,
+    "genre": "Textbook",
+    "available": false,
+    "author_id": 1
+  },
+  {
+    "book_id": 2,
+    "title": "Umugani w'intare n'urukwavu",
+    "year": 2023,
+    "genre": "Audiobook",
+    "available": true,
+    "duration_sec": 500,
+    "narrator_name": "Caleb Mugisha"
+  }
+]

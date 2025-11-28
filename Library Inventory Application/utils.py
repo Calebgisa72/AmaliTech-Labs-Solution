@@ -13,6 +13,7 @@ def get_float(prompt: str, error: str = "Please enter a valid number!") -> float
         except ValueError:
             print(error)
 
+
 def format_time(seconds: int) -> str:
     if seconds < 0:
         raise ValueError("Seconds cannot be negative")
@@ -25,3 +26,11 @@ def format_time(seconds: int) -> str:
         return f"{minutes}:{secs:02d} mins"
 
     return f"{hours}:{minutes:02d}:{secs:02d} hours"
+
+
+def get_non_empty_string(prompt: str) -> str:
+    while True:
+        s = input(prompt).strip()
+        if s:
+            return s
+        print("This field cannot be empty.")
