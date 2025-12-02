@@ -1,5 +1,6 @@
 from data_store import courses, students
 
+
 class Grade:
     def __init__(self):
         self.grades = {}
