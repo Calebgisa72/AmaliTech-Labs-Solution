@@ -1,28 +1,49 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
-from author import Author
+from .author import Author
 from enum import Enum
 from utils import format_time
+from datetime import datetime
+
 
 class Genre(Enum):
     TEXTBOOK = "Textbook"
     AUDIOBOOK = "Audiobook"
 
+
 class Book(ABC):
-    _next_id = 1
+    next_id = 1
 
     @classmethod
     def generate_id(cls) -> int:
-        bid = cls._next_id
-        cls._next_id += 1
+        bid = cls.next_id
+        cls.next_id += 1
         return bid
 
     def __init__(self, title: str, year: int, genre: Genre, available: bool = True):
         self.book_id: int = Book.generate_id()
         self.title: str = title
-        self.year: int = year
-        self.available: bool = available
         self.genre: Genre = genre
+        self.available: bool = available
+        self.__year: int = datetime.now().year
+        self.year = year
+
+    @property
+    def year(self) -> int:
+        """Getter for the private year variable."""
+        return self.__year
+
+    @year.setter
+    def year(self, value: int) -> None:
+        """Setter that ensures the year is not a future year."""
+        current_year = datetime.now().year
+
+        if value > current_year:
+            raise ValueError(f"Year cannot be in the future ({value}).")
+        if value < 0:
+            raise ValueError("Year cannot be negative.")
+
+        self.__year = value
 
     @abstractmethod
     def book_info(self) -> Dict:
@@ -31,7 +52,7 @@ class Book(ABC):
     @abstractmethod
     def update_book(self) -> None:
         pass
-    
+
     @abstractmethod
     def to_dict(self) -> Dict[str, Any]:
         pass
@@ -84,15 +105,16 @@ class Textbook(Book):
 
         for field, value in kwargs.items():
             if field in editable_fields:
-                setattr(self, field, value)
+                if field == "year":
+                    self.year = value
+                else:
+                    setattr(self, field, value)
             else:
                 print(f"Warning: '{field}' is not valid for Textbook.")
 
     def to_dict(self) -> Dict:
         base = self.base_dict()
-        base.update({
-            "author_id": self.author.author_id
-        })
+        base.update({"author_id": self.author.author_id})
         return base
 
     @classmethod
@@ -100,9 +122,12 @@ class Textbook(Book):
         obj = cls.__new__(cls)
         obj.book_id = int(d["book_id"])
         obj.title = d["title"]
-        obj.year = int(d["year"])
-        obj.available = bool(d.get("available", True))
         obj.genre = Genre.TEXTBOOK
+        obj.available = bool(d.get("available", True))
+
+        obj.__year = datetime.now().year
+        obj.year = int(d["year"])
+
         obj.author = author
         return obj
 
@@ -129,17 +154,21 @@ class Audiobook(Book):
 
         for field, value in kwargs.items():
             if field in editable_fields:
-                setattr(self, field, value)
+                if field == "year":
+                    self.year = value
+                else:
+                    setattr(self, field, value)
             else:
                 print(f"Warning: '{field}' is not valid for Audiobook.")
 
-    # Serialization
     def to_dict(self) -> Dict:
         base = self.base_dict()
-        base.update({
-            "duration_sec": int(self.duration_sec),
-            "narrator_name": self.narrator_name
-        })
+        base.update(
+            {
+                "duration_sec": int(self.duration_sec),
+                "narrator_name": self.narrator_name,
+            }
+        )
         return base
 
     @classmethod
@@ -147,9 +176,12 @@ class Audiobook(Book):
         obj = cls.__new__(cls)
         obj.book_id = int(d["book_id"])
         obj.title = d["title"]
-        obj.year = int(d["year"])
-        obj.available = bool(d.get("available", True))
         obj.genre = Genre.AUDIOBOOK
+        obj.available = bool(d.get("available", True))
+
+        obj.__year = datetime.now().year
+        obj.year = int(d["year"])
+
         obj.duration_sec = int(d.get("duration_sec", 0))
         obj.narrator_name = d.get("narrator_name", "")
         return obj

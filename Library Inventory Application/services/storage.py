@@ -2,10 +2,10 @@ import json
 import os
 from typing import List, Dict, Any
 
-from data_store import books, authors, loans
-from author import Author
-from book import Textbook, Audiobook
-from loan import Loan
+from services.data_store import books, authors, loans
+from models.author import Author
+from models.book import Textbook, Audiobook
+from models.loan import Loan
 
 DATA_DIR = os.path.join(os.getcwd(), "data")
 BOOKS_FILE = os.path.join(DATA_DIR, "books.json")
@@ -60,7 +60,7 @@ def load_authors():
         if a.author_id > max_id:
             max_id = a.author_id
     # ensure next id
-    Author._next_id = max_id + 1 if max_id >= Author._next_id else Author._next_id
+    Author.next_id = max_id + 1 if max_id >= Author.next_id else Author.next_id
 
 
 def load_books():
@@ -90,8 +90,8 @@ def load_books():
         if b.book_id > max_id:
             max_id = b.book_id
     # set book next id
-    from book import Book as BookClass
-    BookClass._next_id = max_id + 1 if max_id >= BookClass._next_id else BookClass._next_id
+    from models.book import Book as BookClass
+    BookClass.next_id = max_id + 1 if max_id >= BookClass.next_id else BookClass.next_id
 
 
 def load_loans():
@@ -108,8 +108,8 @@ def load_loans():
         if l.loan_id > max_id:
             max_id = l.loan_id
     # set loan next id
-    from loan import Loan as LoanClass
-    LoanClass._next_id = max_id + 1 if max_id >= LoanClass._next_id else LoanClass._next_id
+    from models.loan import Loan as LoanClass
+    LoanClass.next_id = max_id + 1 if max_id >= LoanClass.next_id else LoanClass.next_id
 
 
 def load_all():

@@ -1,16 +1,16 @@
 from datetime import datetime, timedelta
-from data_store import books
-from borrower import Borrower
+from services.data_store import books
+from .borrower import Borrower
 
 
 class Loan:
-    _next_id = 1
+    next_id = 1
     _charge_per_day: float = 300
 
     @classmethod
     def generate_id(cls) -> int:
-        lid = cls._next_id
-        cls._next_id += 1
+        lid = cls.next_id
+        cls.next_id += 1
         return lid
 
     def __init__(self, book_id: int, borrower_name: str, borrower_telephone: str):
