@@ -6,8 +6,9 @@ class Student(ABC):
     _next_id = 1
 
     def __init__(self, name):
-        self.student_id = Student.generate_id()
+        self._student_id = 0
         self.name = name
+        self.student_id = Student.generate_id()
 
         if isinstance(self, GraduateStudent):
             self.level = "Graduate"
@@ -16,6 +17,14 @@ class Student(ABC):
 
     def __str__(self):
         return f"{self.student_id} - {self.name} ({self.level})"
+    
+    @property
+    def student_id(self) -> int:
+        return self._student_id
+    
+    @student_id.setter
+    def student_id(self, value: int):
+        self._student_id = value
 
     @abstractmethod
     def get_student_details(self) -> dict[str, Any]:

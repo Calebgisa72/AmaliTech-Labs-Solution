@@ -1,8 +1,8 @@
 import pytest
 import data_store
-from grade import Grade
-from student import UndergraduateStudent
-from course import Course
+from models.grade import Grade
+from models.student import UndergraduateStudent
+from models.course import Course
 
 
 @pytest.fixture

@@ -1,4 +1,4 @@
-from course import Course
+from models.course import Course
 
 
 def test_course_creation():

@@ -1,5 +1,5 @@
-from student import Student
-from course import Course
+from .student import Student
+from .course import Course
 
 
 class Enrollment:
@@ -11,6 +11,9 @@ class Enrollment:
 
     def get_student_courses(self, student_id):
         return self.records.get(student_id, [])
+    
+    def is_enrolled(self, student_id, course: Course):
+        return course in self.records.get(student_id, [])
 
     def print_records(self):
         if not self.records:

@@ -3,11 +3,23 @@ from data_store import courses, students
 
 class Grade:
     def __init__(self):
+        self._marks = 0.0
         self.grades = {}
 
+    @property
+    def marks(self):
+        return self._marks
+
+    @marks.setter
+    def marks(self, value):
+        if 0.0 <= value <= 100.0:
+            self._marks = value
+        else:
+            raise ValueError("Marks must be between 0 and 100.")
+
     def add_student_marks(self, student_id, course_code, marks: float):
-        self.grades.setdefault(student_id, {})[course_code] = marks
-        self._marks = 0.0
+        self.marks = marks
+        self.grades.setdefault(student_id, {})[course_code] = self.marks
 
     def get_students_marks(self, student_id):
         if not self.grades:
@@ -23,7 +35,6 @@ class Grade:
 
         total = 0
         print(f"\nMarks for {student.name}:")
-
         for course_code, marks in student_marks.items():
             course_title = courses[course_code].title
             total += marks

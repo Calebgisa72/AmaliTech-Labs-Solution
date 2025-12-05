@@ -1,13 +1,13 @@
 import pytest
 import data_store
-from main import (
+from controllers import (
     choose_level,
     add_student,
     add_course,
     get_student_courses,
 )
-from student import UndergraduateStudent, GraduateStudent
-from course import Course
+from models.student import UndergraduateStudent, GraduateStudent
+from models.course import Course
 
 
 @pytest.fixture(autouse=True)

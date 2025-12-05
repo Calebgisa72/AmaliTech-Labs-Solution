@@ -1,5 +1,5 @@
 import pytest
-from student import GraduateStudent, UndergraduateStudent, Student
+from models.student import GraduateStudent, UndergraduateStudent, Student
 
 
 @pytest.fixture(autouse=True)

@@ -1,23 +1,70 @@
 def get_int(prompt: str):
-    while True:
+    """
+    Gets an integer input.
+    - User has 2 tries
+    - User can type 'q' to quit early (returns None)
+    """
+    tries = 2
+    while tries > 0:
+        value = input(prompt).strip()
+
+        if value.lower() == "q":
+            print("Returning to menu...")
+            return None
+
         try:
-            return int(input(prompt))
+            return int(value)
         except ValueError:
-            print("Enter a valid number!")
+            tries -= 1
+            print(f"Invalid integer! You have {tries} tries left.")
+
+    print("Too many failed attempts. Returning to menu...")
+    return None
 
 
 def get_float(prompt: str):
-    while True:
+    """
+    Gets a float input.
+    - User has 2 tries
+    - User can type 'q' to quit early (returns None)
+    """
+    tries = 2
+    while tries > 0:
+        value = input(prompt).strip()
+
+        if value.lower() == "q":
+            print("Returning to menu...")
+            return None
+
         try:
-            return float(input(prompt))
+            return float(value)
         except ValueError:
-            print("Enter valid marks!")
+            tries -= 1
+            print(f"Invalid number! You have {tries} tries left.")
+
+    print("Too many failed attempts. Returning to menu...")
+    return None
 
 
 def get_non_empty_string(prompt: str):
-    while True:
+    """
+    Gets a non-empty string.
+    - User has 2 tries
+    - User can type 'q' to quit early (returns None)
+    """
+    tries = 2
+    while tries > 0:
         value = input(prompt).strip()
+
+        if value.lower() == "q":
+            print("Returning to menu...")
+            return None
+
         if value:
             return value
-        else:
-            print("Input cannot be empty. Please enter a valid value")
+
+        tries -= 1
+        print(f"Input cannot be empty. You have {tries} tries left.")
+
+    print("Too many failed attempts. Returning to menu...")
+    return None
