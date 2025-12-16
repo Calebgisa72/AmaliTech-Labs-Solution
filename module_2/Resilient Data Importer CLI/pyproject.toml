@@ -1,15 +1,24 @@
-[project]
+[tool.poetry]
 name = "resilient-data-importer-cli"
 version = "0.1.0"
-description = ""
-authors = [
-    {name = "Gisa M. Caleb Pacifique",email = "gisacaleb72@gmail.com"}
-]
-readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
+description = "CLI tool to import users from CSV into JSON storage"
+authors = ["Gisa M. Caleb Pacifique <gisacaleb72@gmail.com>"]
+
+packages = [
+    { include = "resilient_importer" }
 ]
 
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=9.0.2,<10.0.0"
+coverage = ">=7.13.0,<8.0.0"
+pytest-cov = ">=7.0.0,<8.0.0"
+black = ">=24.3.0,<25.0.0"
+ruff = ">=0.3.0,<0.4.0"
+mypy = ">=1.9.0,<2.0.0"
+pre-commit = ">=3.6.0,<4.0.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
