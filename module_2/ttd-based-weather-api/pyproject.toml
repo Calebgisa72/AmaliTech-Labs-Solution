@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "lab-2-weather-service"
+version = "0.1.0"
+description = "TDD-based Weather API Service Stub"
+authors = ["Gisa M. Caleb Pacifique <gisacaleb72@gmail.com>"]
+packages = [{ include = "weather_service" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2"
+pytest-mock = "^3.14"
+pytest-cov = "^5.0"
+coverage = "^7.6"
+black = "^24.4"
+ruff = "^0.4"
+mypy = "^1.10"
+pre-commit = "^3.7"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
