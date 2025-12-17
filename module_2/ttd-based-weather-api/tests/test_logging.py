@@ -1,5 +1,5 @@
-def test_logging_on_success(service, caplog):
+def test_logging_on_success(service, log) -> None:
     service.get_forecast("Kigali")
 
-    assert "Received forecast request" in caplog.text
-    assert "Returning forecast" in caplog.text
+    assert "Received forecast request" in log.text
+    assert "Returning forecast" in log.text
