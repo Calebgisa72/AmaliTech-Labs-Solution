@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "student-analytics"
+version = "0.1.0"
+description = "Lab 1: Student Grade Analytics Tool with Advanced Collections"
+authors = ["AmaliTech <info@amalitech.com>"]
+readme = "README.md"
+packages = [{include = "student_analytics"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+mypy = "^1.8"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
