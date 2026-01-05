@@ -1,0 +1,9 @@
+student_id,name,major,year,course_name,credits,grade
+S001,Alice Smith,Computer Science,2,Data Structures,4,88.5
+S001,Alice Smith,Computer Science,2,Algorithms,4,92.0
+S002,Bob Jones,Mathematics,3,Calculus II,3,75.0
+S002,Bob Jones,Mathematics,3,Linear Algebra,3,81.5
+S003,Charlie Brown,Physics,1,Physics I,4,95.0
+S003,Charlie Brown,Physics,1,Lab I,2,90.0
+S004,David White,Computer Science,4,Operating Systems,4,65.0
+S004,David White,Computer Science,4,Networks,3,70.0
