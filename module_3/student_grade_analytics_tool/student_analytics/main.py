@@ -1,17 +1,23 @@
 import argparse
 import sys
+import logging
 from pathlib import Path
-
 
 from .models.student import Student
 from .models.course import Course
 from .services.io_service import IOService
 from .services.report_service import ReportService
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+logger = logging.getLogger(__name__)
+
 
 def parse_student_row(row: dict) -> Student:
     """Helper to parse a CSV row into a Student object."""
-
     try:
         grade_val = float(row["grade"])
     except ValueError:
@@ -47,10 +53,10 @@ def main():
     args = parser.parse_args()
 
     if not args.input_file.exists():
-        print(f"Error: Input file '{args.input_file}' does not exist.")
+        logger.error(f"Input file '{args.input_file}' does not exist.")
         sys.exit(1)
 
-    print(f"Processing {args.input_file}...")
+    logger.info(f"Processing {args.input_file}...")
 
     students_map = {}  # Map student_id to Student object to aggregate courses
 
@@ -68,7 +74,7 @@ def main():
                     "grade",
                 ]
                 if not all(col in row for col in required_cols):
-                    print(f"Skipping malformed row: {row}")
+                    logger.warning(f"Skipping malformed row: {row}")
                     continue
 
                 student_temp = parse_student_row(row)
@@ -81,19 +87,16 @@ def main():
                     students_map[student_temp.student_id] = student_temp
 
         students = list(students_map.values())
-        print(f"Loaded {len(students)} students.")
+        logger.info(f"Loaded {len(students)} students.")
 
-        print("Generating report...")
+        logger.info("Generating report...")
         report = ReportService.generate_report(students)
 
         IOService.write_json(report, args.output)
-        print(f"Report saved to {args.output}")
+        logger.info(f"Report saved to {args.output}")
 
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        import traceback
-
-        traceback.print_exc()
+    except Exception:
+        logger.exception("An unexpected error occurred")
         sys.exit(1)
 
 
