@@ -1,17 +1,22 @@
 import argparse
 import sys
+import logging
 from pathlib import Path
-
 
 from .models.student import Student
 from .models.course import Course
 from .services.io_service import IOService
 from .services.report_service import ReportService
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+logger = logging.getLogger(__name__)
+
 
 def parse_student_row(row: dict) -> Student:
-    """Helper to parse a CSV row into a Student object."""
-
     try:
         grade_val = float(row["grade"])
     except ValueError:
@@ -31,33 +36,29 @@ def parse_student_row(row: dict) -> Student:
 
 
 def main():
-    """
-    Main entry point for the Student Grade Analytics Tool.
-    """
     parser = argparse.ArgumentParser(description="Student Grade Analytics Tool")
     parser.add_argument("input_file", type=Path, help="Path to input CSV file")
     parser.add_argument(
         "--output",
         "-o",
         type=Path,
-        default=Path("report.json"),
+        default=Path("output/report.json"),
         help="Path to output JSON report",
     )
 
     args = parser.parse_args()
 
     if not args.input_file.exists():
-        print(f"Error: Input file '{args.input_file}' does not exist.")
+        logger.error(f"Input file '{args.input_file}' does not exist.")
         sys.exit(1)
 
-    print(f"Processing {args.input_file}...")
+    logger.info(f"Processing {args.input_file}...")
 
-    students_map = {}  # Map student_id to Student object to aggregate courses
+    students_map = {}
 
     try:
         with IOService.read_csv(args.input_file) as reader:
             for row in reader:
-                # Validation of required fields
                 required_cols = [
                     "student_id",
                     "name",
@@ -68,7 +69,7 @@ def main():
                     "grade",
                 ]
                 if not all(col in row for col in required_cols):
-                    print(f"Skipping malformed row: {row}")
+                    logger.warning(f"Skipping malformed row: {row}")
                     continue
 
                 student_temp = parse_student_row(row)
@@ -81,19 +82,39 @@ def main():
                     students_map[student_temp.student_id] = student_temp
 
         students = list(students_map.values())
-        print(f"Loaded {len(students)} students.")
+        logger.info(f"Loaded {len(students)} students.")
 
-        print("Generating report...")
+        logger.info("Generating report...")
         report = ReportService.generate_report(students)
 
         IOService.write_json(report, args.output)
-        print(f"Report saved to {args.output}")
+        logger.info(f"Report saved to {args.output}")
 
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        import traceback
+        logger.info("Generating visualizations...")
+        output_dir = args.output.parent
+        if output_dir == Path("."):
+            output_dir = Path("output")
+            output_dir.mkdir(parents=True, exist_ok=True)
 
-        traceback.print_exc()
+        all_grades = [
+            course.grade
+            for student in students
+            for course in student.courses
+            if isinstance(course.grade, (int, float))
+        ]
+
+        from .services.visualization_service import VisualizationService
+
+        VisualizationService.generate_grade_distribution_chart(all_grades, output_dir)
+        VisualizationService.generate_summary_chart(
+            report["overall_statistics"], output_dir
+        )
+        VisualizationService.generate_top_performers_chart(students, output_dir)
+
+        logger.info(f"Visualizations saved to {output_dir}")
+
+    except Exception:
+        logger.exception("An unexpected error occurred")
         sys.exit(1)
 
 

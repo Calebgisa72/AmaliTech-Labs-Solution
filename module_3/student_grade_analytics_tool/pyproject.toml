@@ -2,17 +2,22 @@
 name = "student-analytics"
 version = "0.1.0"
 description = "Lab 1: Student Grade Analytics Tool with Advanced Collections"
-authors = ["AmaliTech <info@amalitech.com>"]
+authors = ["Gisa M. Caleb Pacifique <gisacaleb72@gmail.com>"]
 readme = "README.md"
 packages = [{include = "student_analytics"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11,<4.0"
+matplotlib = "^3.10.8"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0"
-mypy = "^1.8"
+pytest = ">=9.0.2,<10.0.0"
+coverage = ">=7.13.0,<8.0.0"
+pytest-cov = ">=7.0.0,<8.0.0"
+black = ">=24.3.0,<25.0.0"
+ruff = ">=0.3.0,<0.4.0"
+mypy = ">=1.9.0,<2.0.0"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
