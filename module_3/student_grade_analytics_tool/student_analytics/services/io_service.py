@@ -5,9 +5,6 @@ from contextlib import contextmanager
 
 
 class IOService:
-    """
-    Service for handling file Input/Output operations.
-    """
 
     @staticmethod
     @contextmanager
@@ -20,10 +17,6 @@ class IOService:
 
         Yields:
             csv.DictReader: CSV reader object.
-
-        Raises:
-            FileNotFoundError: If the file does not exist.
-            IOError: If there is an issue reading the file.
         """
         try:
             if not file_path.exists():
@@ -50,6 +43,11 @@ class IOService:
         """
         try:
             import json
+
+            if output_path.parent == Path("."):
+                output_path = Path("output") / output_path.name
+
+            output_path.parent.mkdir(parents=True, exist_ok=True)
 
             with open(output_path, mode="w", encoding="utf-8") as f:
                 json.dump(data, f, indent=4)

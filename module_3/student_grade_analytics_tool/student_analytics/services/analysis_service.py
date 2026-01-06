@@ -4,9 +4,6 @@ from collections import Counter, defaultdict, OrderedDict
 
 
 class AnalysisService:
-    """
-    Service for performing statistical analysis on student data.
-    """
 
     @staticmethod
     def calculate_distribution(grades: List[Union[float, int]]) -> Counter:

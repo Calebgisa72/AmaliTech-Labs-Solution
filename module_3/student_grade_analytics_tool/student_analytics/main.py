@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 def parse_student_row(row: dict) -> Student:
-    """Helper to parse a CSV row into a Student object."""
     try:
         grade_val = float(row["grade"])
     except ValueError:
@@ -37,16 +36,13 @@ def parse_student_row(row: dict) -> Student:
 
 
 def main():
-    """
-    Main entry point for the Student Grade Analytics Tool.
-    """
     parser = argparse.ArgumentParser(description="Student Grade Analytics Tool")
     parser.add_argument("input_file", type=Path, help="Path to input CSV file")
     parser.add_argument(
         "--output",
         "-o",
         type=Path,
-        default=Path("report.json"),
+        default=Path("output/report.json"),
         help="Path to output JSON report",
     )
 
@@ -58,12 +54,11 @@ def main():
 
     logger.info(f"Processing {args.input_file}...")
 
-    students_map = {}  # Map student_id to Student object to aggregate courses
+    students_map = {}
 
     try:
         with IOService.read_csv(args.input_file) as reader:
             for row in reader:
-                # Validation of required fields
                 required_cols = [
                     "student_id",
                     "name",
@@ -94,6 +89,29 @@ def main():
 
         IOService.write_json(report, args.output)
         logger.info(f"Report saved to {args.output}")
+
+        logger.info("Generating visualizations...")
+        output_dir = args.output.parent
+        if output_dir == Path("."):
+            output_dir = Path("output")
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+        all_grades = [
+            course.grade
+            for student in students
+            for course in student.courses
+            if isinstance(course.grade, (int, float))
+        ]
+
+        from .services.visualization_service import VisualizationService
+
+        VisualizationService.generate_grade_distribution_chart(all_grades, output_dir)
+        VisualizationService.generate_summary_chart(
+            report["overall_statistics"], output_dir
+        )
+        VisualizationService.generate_top_performers_chart(students, output_dir)
+
+        logger.info(f"Visualizations saved to {output_dir}")
 
     except Exception:
         logger.exception("An unexpected error occurred")
