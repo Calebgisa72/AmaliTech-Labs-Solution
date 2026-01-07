@@ -1,0 +1,5 @@
+127.0.0.1 - temp_user [10/Oct/2000:13:55:36 -0700] "GET /index.html HTTP/1.0" 200 2326 "http://example.com" "Mozilla/5.0"
+192.168.1.1 - - [10/Oct/2000:14:00:00 -0700] "POST /login HTTP/1.1" 200 500 "-" "Mozilla/5.0"
+127.0.0.1 - - [10/Oct/2000:14:05:00 -0700] "GET /missing_page HTTP/1.0" 404 150 "-" "Mozilla/5.0"
+10.0.0.1 - - [10/Oct/2000:14:10:00 -0700] "GET /api/data HTTP/1.1" 500 - "-" "curl/7.68.0"
+192.168.1.1 - - [10/Oct/2000:14:15:00 -0700] "GET /dashboard HTTP/1.1" 200 1200 "http://example.com" "Mozilla/5.0"

@@ -1,19 +1,14 @@
-"""
-Model for structured log entries.
-"""
-
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
 class LogEntry:
-    """Represents a single parsed log line."""
-
     ip_address: str
+    identity: str
+    user_id: str
     timestamp: str
-    request_method: str
-    request_url: str
+    request: str
     status_code: int
+    size: int
+    referer: str
     user_agent: str
-    # Add other fields as necessary
