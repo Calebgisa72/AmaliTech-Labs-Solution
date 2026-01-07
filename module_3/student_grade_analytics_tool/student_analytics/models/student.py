@@ -5,17 +5,6 @@ from .course import Course
 
 @dataclass
 class Student:
-    """
-    Represents a student.
-
-    Attributes:
-        student_id (str): Unique identifier.
-        name (str): Full name.
-        major (str): Field of study.
-        year (int): Academic year.
-        courses (List[Course]): List of enrolled courses.
-    """
-
     student_id: str
     name: str
     major: str
