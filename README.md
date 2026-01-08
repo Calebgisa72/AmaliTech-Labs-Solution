@@ -14,6 +14,7 @@ The following table provides a high-level summary of the labs completed in this 
 | **Module 2** | **[Resilient Data Importer](module_2/Resilient%20Data%20Importer%20CLI)**      | Robust CLI tool for importing/deduplication of CSV user data into JSON storage.               | File I/O, Exception Handling, Generators, Dataclasses               | `poetry run python -m resilient_importer.cli data/users.csv` |
 | **Module 2** | **[TDD Weather API Stub](module_2/ttd-based-weather-api)**                     | A weather service stub designed to demonstrate high-quality software engineering practices.   | TDD (Test-Driven Development), SOLID Principles, Clean Architecture | `pytest`                                                     |
 | **Module 3** | **[Student Grade Analytics](module_3/student_grade_analytics_tool)**           | CLI tool for analyzing student grades using advanced collections and generating JSON reports. | Advanced Collections, Dataclasses, IO Context Managers              | `python -m student_analytics.main`                           |
+| **Module 3** | **[Log File Analyzer](module_3/log-file-analyzer)**                            | CLI tool for parsing and analyzing web server logs for insights.                              | Regex, Generators, Functional Programming                           | `python -m log_file_analyzer.main`                           |
 
 ## 🚀 Getting Started
 
