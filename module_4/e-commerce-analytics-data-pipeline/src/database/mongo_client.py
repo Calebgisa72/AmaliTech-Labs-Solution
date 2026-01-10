@@ -1,5 +1,8 @@
 from pymongo import MongoClient
 from src.config.settings import settings
+from src.utils.common import setup_logger
+
+logger = setup_logger(__name__)
 
 
 def get_mongo_client():
@@ -7,7 +10,7 @@ def get_mongo_client():
         client = MongoClient(settings.MONGO_URI)
         return client
     except Exception as e:
-        print(f"Error connecting to MongoDB: {e}")
+        logger.error(f"Error connecting to MongoDB: {e}")
         return None
 
 
