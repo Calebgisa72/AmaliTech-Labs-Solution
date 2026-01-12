@@ -37,7 +37,6 @@ module_4/e-commerce-analytics-data-pipeline/
 │   ├── config/          # Configuration and env var loading
 │   ├── database/        # DB connections (Postgres, Redis, Mongo) & DDL
 │   ├── models/          # Python data classes for domain entities
-│   ├── pipelines/       # Data ingestion and transformation flow
 │   ├── services/        # Business logic (Order processing, etc.)
 │   └── utils/           # Helper functions
 ├── docs/

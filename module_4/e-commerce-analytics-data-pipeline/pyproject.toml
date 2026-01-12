@@ -11,11 +11,17 @@ dependencies = [
     "psycopg2-binary (>=2.9.11,<3.0.0)",
     "redis (>=7.1.0,<8.0.0)",
     "pymongo (>=4.16.0,<5.0.0)",
-    "python-dotenv (>=1.2.1,<2.0.0)",
-    "faker (>=40.1.0,<41.0.0)"
+    "faker (>=40.1.0,<41.0.0)",
+    "python-dotenv (>=1.2.1,<2.0.0)"
 ]
 
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "types-redis (>=4.6.0.20241004,<5.0.0.0)",
+    "mypy (>=1.19.1,<2.0.0)"
+]
