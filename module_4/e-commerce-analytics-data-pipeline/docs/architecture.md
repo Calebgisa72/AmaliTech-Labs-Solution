@@ -1,74 +1,71 @@
 # E-Commerce Analytics Data Pipeline - Architecture
 
-## Overview
+## 📖 Overview
 
-This project involves building a robust data processing and analytics pipeline for a fictional e-commerce store. It simulates a real-world scenario where transactional data processing, caching, session management, and complex analytics are integrated into a single system.
+This document provides a detailed technical overview of the E-Commerce Analytics Data Pipeline. The system is designed to demonstrate high-performance data processing patterns by integrating relational transaction processing with NoSQL capabilities.
 
-## Architecture
+## 🏗️ System Architecture
 
-The system utilizes a polyglot persistence architecture:
+The solution implements a **Polyglot Persistence** architecture, leveraging the best tool for each specific data workload.
 
-1.  **PostgreSQL (Relational Core)**: Stores the primary business entities (Customers, Products, Orders, Order Items) in a normalized 3NF schema. It also leverages `JSONB` for flexible product metadata.
-2.  **Redis (Caching Layer)**: Acts as a high-speed cache for read-heavy operations, such as retrieving "Top 10 Best-Selling Products".
-3.  **MongoDB (Session Store)**: generic store for unstructured data like user shopping carts before order finalization.
+### 1. Relational Core (PostgreSQL)
 
-### Data Flow
+- **Role**: Primary Source of Truth.
+- **Data Models**:
+  - `Customers`: User profiles.
+  - `Products`: Catalog items with `JSONB` metadata for flexible attributes (colors, sizes).
+  - `Orders` & `OrderItems`: Transactional records.
+- **Key Features**:
+  - ACID compliance for order placement.
+  - Complex relational queries for analytics.
 
-1.  **Ingestion/Transactional**: Python scripts process new orders.
-    - Validate stock (Postgres).
-    - Create Order (Postgres Transaction).
-    - Clear Cart (Mongo).
-    - Update Cache (Redis - invalidation/write-through).
-2.  **Analytics**: Complex SQL queries run against Postgres to generate reports. Performance is optimized using Indexes and analyzed via `EXPLAIN ANALYZE`.
+### 2. Caching Layer (Redis)
 
-## Tech Stack
+- **Role**: High-speed data retrieval.
+- **Usage**:
+  - Caching the results of expensive queries (e.g., "Top 10 Best Sellers").
+  - TTL (Time-to-Live) strategies for automatic cache invalidation.
 
-- **Language**: Python 3.11+
-- **Database**: PostgreSQL 15+ (Local Instance)
-- **NoSQL**: Redis (Stack), MongoDB (Local Instances)
-- **Dependency Management**: Poetry
+### 3. Session Store (MongoDB)
 
-## Project Structure
+- **Role**: Temporary / Unstructured data storage.
+- **Usage**:
+  - `Shopping Cart`: Stores items added by users before checkout.
+  - Allows high write throughput and flexible schema for session data.
 
-```
-module_4/e-commerce-analytics-data-pipeline/
-├── src/
-│   ├── analytics/       # SQL queries, window functions, CTEs
-│   ├── config/          # Configuration and env var loading
-│   ├── database/        # DB connections (Postgres, Redis, Mongo) & DDL
-│   ├── models/          # Python data classes for domain entities
-│   ├── services/        # Business logic (Order processing, etc.)
-│   └── utils/           # Helper functions
-├── docs/
-│   └── architecture.md  # This file
-├── tests/               # Unit and integration tests
-├── .env                 # Environment variables (git-ignored)
-├── pyproject.toml       # Python dependencies
-└── README.md            # (To be added in final phase)
-```
+---
 
-## Setup Instructions
+## 🔄 Data Flow
 
-### Prerequisites
+### Order Processing Pipeline
 
-- Python 3.11+ installed.
-- Poetry installed.
-- **Local Databases**: Ensure PostgreSQL, Redis, and MongoDB are installed and running locally.
+1.  **User adds item to cart**: Data written to **MongoDB**.
+2.  **User places order**:
+    - App reads cart from MongoDB.
+    - App starts **PostgreSQL Transaction**:
+      - Deducts stock from `Products`.
+      - Inserts record into `Orders` & `OrderItems`.
+    - On success:
+      - Cart is cleared from MongoDB.
+      - **Redis** cache for product stock is invalidated/updated.
 
-### Installation
+### Analytics Pipeline
 
-1.  **Clone the repository** (if not already local).
-2.  **Install Dependencies**:
-    ```bash
-    poetry install
-    ```
-3.  **Activate Virtual Environment**:
-    ```bash
-    source $(poetry env info --path)/bin/activate  # Linux/Mac
-    # OR
-    .\venv\Scripts\activate                        # Windows
-    ```
+1.  **Report Generation**:
+    - Complex SQL (Window Functions, CTEs) executed against **PostgreSQL**.
+2.  **Optimization**:
+    - `EXPLAIN ANALYZE` used to identify bottlenecks.
+    - Indexes (B-Tree, GIN) applied to optimize lookup and JSONB querying.
 
-## Usage
+---
 
-_Instructions for running specific scripts will be added in Phase 2._
+## 📂 Code Structure & Responsibilities
+
+| Directory       | Component          | Responsibility                                          |
+| :-------------- | :----------------- | :------------------------------------------------------ |
+| `src/config`    | **Configuration**  | Loads environment variables (`.env`) via `settings.py`. |
+| `src/database`  | **Infrastructure** | Manages connections to Postgres, Redis, and Mongo.      |
+| `src/models`    | **Domain Layer**   | Python `dataclasses` representing core entities.        |
+| `src/services`  | **Business Layer** | Contains logic for `OrderService`, `ProductService`.    |
+| `src/pipelines` | **Data pipelines** | Scripts for Ingestion and Transformation.               |
+| `src/analytics` | **Reporting**      | SQL repository for generating business reports.         |
