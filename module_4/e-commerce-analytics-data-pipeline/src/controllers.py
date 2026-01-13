@@ -1,8 +1,8 @@
-from src.services.customer_service import CustomerService
-from src.services.product_service import ProductService
-from src.services.order_service import OrderService
-from src.analytics.reports import AnalyticsReports
-from src.utils.common import setup_logger
+from .services.customer_service import CustomerService
+from .services.product_service import ProductService
+from .services.order_service import OrderService
+from .analytics.reports import AnalyticsReports
+from .utils.common import setup_logger
 
 logger = setup_logger(__name__)
 
@@ -40,34 +40,90 @@ def add_product():
         logger.error(f"Error adding product: {e}")
 
 
-def place_order():
+def add_item_to_cart():
     try:
-        cid = int(input("Enter customer ID: "))
-        cart_items = []
-        while True:
-            pid = int(input("Enter product ID to buy (or 0 to finish): "))
-            if pid == 0:
-                break
-            qty = int(input("Enter quantity: "))
+        cid = input("Enter customer ID (Session ID): ")
+        pid = int(input("Enter product ID: "))
+        qty = int(input("Enter quantity: "))
 
-            prod = product_service.get_product(pid)
-            if prod:
-                price = prod["price"]
-                cart_items.append({"product_id": pid, "quantity": qty, "price": price})
-                print(f"Added {prod['name']} to cart.")
-            else:
-                print("Product not found.")
-
-        if cart_items:
-            oid = order_service.create_order(cid, cart_items)
-            print(f"Order placed successfully! Order ID: {oid}")
+        prod = product_service.get_product(pid)
+        if prod:
+            price = prod["price"]
+            item = {
+                "product_id": pid,
+                "quantity": qty,
+                "price": price,
+                "name": prod["name"],
+            }
+            order_service.add_to_cart(cid, item)
+            print(f"Added {prod['name']} (x{qty}) to cart.")
         else:
-            print("No items in order.")
+            print("Product not found.")
     except ValueError as ve:
         print(f"Input Error: {ve}")
     except Exception as e:
-        print(f"Error placing order: {e}")
-        logger.error(f"Error placing order: {e}")
+        print(f"Error adding to cart: {e}")
+        logger.error(f"Error adding to cart: {e}")
+
+
+def view_cart():
+    try:
+        cid = input("Enter customer ID (Session ID): ")
+        cart_items = order_service.get_cart(cid)
+        if not cart_items:
+            print("Cart is empty.")
+            return
+
+        print(f"\n--- Cart for Customer {cid} ---")
+        for i, item in enumerate(cart_items, 1):
+            name = item.get("name", f"Product {item['product_id']}")
+            print(
+                f"{i}. {name} (ID: {item['product_id']}) - Qty: {item['quantity']} - ${item['price']:.2f}"
+            )
+        print("-------------------------------")
+    except Exception as e:
+        print(f"Error viewing cart: {e}")
+        logger.error(f"Error viewing cart: {e}")
+
+
+def remove_item_from_cart():
+    try:
+        cid = input("Enter customer ID (Session ID): ")
+        pid = int(input("Enter product ID to remove: "))
+        order_service.remove_from_cart(cid, pid)
+        print(f"Removed product {pid} from cart.")
+    except ValueError as ve:
+        print(f"Input Error: {ve}")
+    except Exception as e:
+        print(f"Error removing item: {e}")
+        logger.error(f"Error removing item: {e}")
+
+
+def checkout():
+    try:
+        cid = int(input("Enter customer ID to checkout: "))
+        # Assuming customer ID matches the session ID used for cart
+        session_id = str(cid)
+
+        cart_items = order_service.get_cart(session_id)
+        if not cart_items:
+            print("Cart is empty. Nothing to checkout.")
+            return
+
+        # Validate stock before proceeding (optional but good practice)
+        # The create_order method already checks stock, so we rely on that.
+
+        oid = order_service.create_order(cid, cart_items)
+        print(f"Order placed successfully! Order ID: {oid}")
+
+        # Clear cart after successful order
+        order_service.clear_cart(session_id)
+
+    except ValueError as ve:
+        print(f"Input Error: {ve}")
+    except Exception as e:
+        print(f"Checkout Error: {e}")
+        logger.error(f"Checkout Error: {e}")
 
 
 def get_top_selling_products():
@@ -79,7 +135,6 @@ def get_top_selling_products():
         for item in results:
             print(f"{item['product']}: {item['total_sold']} sold")
     except Exception as e:
-        print(f"Error fetching top selling products: {e}")
         logger.error(f"Error fetching top selling products: {e}")
 
 

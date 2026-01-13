@@ -1,4 +1,4 @@
-from src.database.postgres import PostgresDB
+from ..database.postgres import PostgresDB
 from pathlib import Path
 from src.utils.common import setup_logger
 

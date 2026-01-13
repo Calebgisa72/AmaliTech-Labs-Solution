@@ -1,6 +1,6 @@
 from pymongo import MongoClient
-from src.config.settings import settings
-from src.utils.common import setup_logger
+from ..config.settings import settings
+from ..utils.common import setup_logger
 
 logger = setup_logger(__name__)
 
