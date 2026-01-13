@@ -86,11 +86,14 @@ def print_menu():
     print("\n--- E-Commerce Analytics Data Pipeline ---")
     print("1. Add Customer")
     print("2. Add Product")
-    print("3. Place Order")
-    print("4. View Top Selling Products")
-    print("5. View Products Ranked by Category")
-    print("6. View Customer LTV (Total Revenue)")
-    print("7. Exit")
+    print("3. Add Item to Cart")
+    print("4. View Cart")
+    print("5. Remove Item from Cart")
+    print("6. Checkout (Place Order)")
+    print("7. View Top Selling Products")
+    print("8. View Products Ranked by Category")
+    print("9. View Customer LTV (Total Revenue)")
+    print("10. Exit")
     print("------------------------------------------")
 
 
@@ -104,14 +107,20 @@ def interactive_menu():
         elif choice == "2":
             ctrl.add_product()
         elif choice == "3":
-            ctrl.place_order()
+            ctrl.add_item_to_cart()
         elif choice == "4":
-            ctrl.get_top_selling_products()
+            ctrl.view_cart()
         elif choice == "5":
-            ctrl.get_products_ranked_by_category()
+            ctrl.remove_item_from_cart()
         elif choice == "6":
-            ctrl.get_customer_ltv()
+            ctrl.checkout()
         elif choice == "7":
+            ctrl.get_top_selling_products()
+        elif choice == "8":
+            ctrl.get_products_ranked_by_category()
+        elif choice == "9":
+            ctrl.get_customer_ltv()
+        elif choice == "10":
             print("Exiting...")
             break
         else:

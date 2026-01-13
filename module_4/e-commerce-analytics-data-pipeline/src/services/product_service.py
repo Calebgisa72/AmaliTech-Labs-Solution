@@ -1,7 +1,7 @@
 import json
-from src.database.postgres import PostgresDB
-from src.database.redis_client import get_redis_client
-from src.utils.common import setup_logger
+from ..database.postgres import PostgresDB
+from ..database.redis_client import get_redis_client
+from ..utils.common import setup_logger
 
 logger = setup_logger(__name__)
 

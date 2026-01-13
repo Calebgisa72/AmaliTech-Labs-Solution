@@ -1,7 +1,7 @@
 import psycopg2
 from psycopg2 import pool
-from src.config.settings import settings
-from src.utils.common import setup_logger
+from ..config.settings import settings
+from ..utils.common import setup_logger
 
 logger = setup_logger(__name__)
 

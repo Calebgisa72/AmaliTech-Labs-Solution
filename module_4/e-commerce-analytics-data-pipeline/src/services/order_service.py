@@ -1,6 +1,6 @@
-from src.database.postgres import PostgresDB
-from src.database.mongo_client import get_mongo_db
-from src.utils.common import setup_logger
+from ..database.postgres import PostgresDB
+from ..database.mongo_client import get_mongo_db
+from ..utils.common import setup_logger
 
 logger = setup_logger(__name__)
 
@@ -10,7 +10,6 @@ class OrderService:
         conn = PostgresDB.get_connection()
         try:
             with conn.cursor() as cur:
-                # Calculate total amount
                 total_amount = sum(
                     item["quantity"] * item["price"] for item in cart_items
                 )
@@ -55,7 +54,6 @@ class OrderService:
         conn = PostgresDB.get_connection()
         try:
             with conn.cursor() as cur:
-                # Use JSON aggregation to get items nested within the order
                 query = """
                     SELECT o.order_id, o.total_amount, o.order_date,
                            json_agg(json_build_object('product_id', oi.product_id, 'quantity', oi.quantity, 'unit_price', oi.unit_price))
@@ -86,10 +84,6 @@ class OrderService:
             PostgresDB.return_connection(conn)
 
     def add_to_cart(self, session_id: str, item: dict):
-        """
-        Adds an item to the user's shopping cart in MongoDB.
-        item: dict with 'product_id', 'quantity', 'price'
-        """
         db = get_mongo_db()
         if db is not None:
             try:
@@ -113,3 +107,26 @@ class OrderService:
                 logger.error(f"Error fetching cart: {e}")
                 return []
         return []
+
+    def remove_from_cart(self, session_id: str, product_id: int):
+        db = get_mongo_db()
+        if db is not None:
+            try:
+                db.carts.update_one(
+                    {"session_id": session_id},
+                    {"$pull": {"items": {"product_id": product_id}}},
+                )
+                logger.info(
+                    f"Product {product_id} removed from cart for session {session_id}"
+                )
+            except Exception as e:
+                logger.error(f"Error removing from cart: {e}")
+
+    def clear_cart(self, session_id: str):
+        db = get_mongo_db()
+        if db is not None:
+            try:
+                db.carts.delete_one({"session_id": session_id})
+                logger.info(f"Cart cleared for session {session_id}")
+            except Exception as e:
+                logger.error(f"Error clearing cart: {e}")

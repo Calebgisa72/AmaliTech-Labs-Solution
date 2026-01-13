@@ -1,5 +1,5 @@
-from src.database.postgres import PostgresDB
-from src.utils.common import setup_logger
+from ..database.postgres import PostgresDB
+from ..utils.common import setup_logger
 
 logger = setup_logger(__name__)
 
