@@ -4,7 +4,6 @@ from faker import Faker
 from src.services.customer_service import CustomerService
 from src.services.product_service import ProductService
 from src.services.order_service import OrderService
-from src.analytics.reports import AnalyticsReports
 from src.utils.common import setup_logger
 import src.controllers as ctrl
 
@@ -16,11 +15,10 @@ def seed_data():
     customer_service = CustomerService()
     product_service = ProductService()
     order_service = OrderService()
-    analytics_service = AnalyticsReports()
 
     logger.info("Checking if seeding is required...")
-    top_products = analytics_service.get_top_selling_products(limit=3)
-    if top_products:
+    products = product_service.get_all_products()
+    if products:
         logger.info("Data already exists. Skipping seeding.")
         return
 
@@ -30,7 +28,7 @@ def seed_data():
     categories = ["Electronics", "Clothing", "Home", "Books", "Sports"]
     products = []
     for _ in range(20):
-        name = f"Product {fake.word().capitalize()} {fake.word().capitalize()}"
+        name = f"Product {fake.random_company_product().capitalize()} {fake.word().capitalize()}"
         category = random.choice(categories)
         price = float(fake.random_int(min=10, max=500))
         stock = random.randint(10, 100)
