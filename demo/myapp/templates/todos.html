@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div>
+    <h1>To-Do List</h1>
+    <a href="{% url 'create_todo' %}">Create Todo</a>
+</div>
+<ul>
+    {% for item in todo_items %}
+  <li>
+    {{item.title}}: {% if item.completed %}Completed{% else %}Not completed{% endif %}
+  </li>
+  {% endfor %}
+  </ul>
+{% endblock %}

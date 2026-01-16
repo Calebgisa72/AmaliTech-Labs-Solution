@@ -23,7 +23,6 @@ class ProductService:
                 )
                 product_id = cur.fetchone()[0]
                 conn.commit()
-                # Optionally cache the new product immediately
                 return product_id
         except Exception as e:
             conn.rollback()
@@ -64,7 +63,7 @@ class ProductService:
                         ),
                     }
 
-                    # 3. Cache in Redis (TTL 1 hour)
+                    # 3. Cache in Redis
                     if redis_client:
                         redis_client.set(cache_key, json.dumps(product), ex=3600)
 
