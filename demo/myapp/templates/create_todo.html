@@ -1,14 +1,42 @@
 {% extends "base.html" %}
-
 {% block title %}Create Todo{% endblock %}
-
 {% block content %}
-    <section>
-        <h3>New Todo</h3>
-        <form method="post">
-            {% csrf_token %}
-            {{ form }}
-            <button type="submit">Save</button>
-        </form>
-    </section>
+<div class="flex justify-center mt-10">
+  <div class="w-full max-w-md">
+    <div class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4">
+      <h3 class="text-2xl font-bold mb-6 text-gray-800 text-center">
+        New Todo
+      </h3>
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-4">
+          <label
+            class="block text-gray-700 text-sm font-bold mb-2"
+            for="{{ form.title.id_for_label }}"
+          >
+            Title
+          </label>
+          {{ form.title }} {% if form.title.errors %}
+          <p class="text-red-500 text-xs italic">{{ form.title.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="flex items-center justify-between">
+          <button
+            class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 transform hover:scale-105"
+            type="submit"
+          >
+            Save
+          </button>
+          <a
+            class="inline-block align-baseline font-bold text-sm text-green-500 hover:text-green-800 transition duration-300"
+            href="{% url 'todos' %}"
+          >
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}

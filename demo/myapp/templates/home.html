@@ -1,9 +1,27 @@
 {% extends "base.html" %}
-
-{% block title %}
-Home - Django App
-{% endblock %}
-
+{% block title %}Home - Django App{% endblock %}
 {% block content %}
-<p>This is the home page.</p>
+<div
+  class="bg-white rounded-lg shadow-xl p-10 mt-10 text-center max-w-2xl mx-auto"
+>
+  <h1 class="text-4xl font-bold text-gray-800 mb-6">Welcome to My App</h1>
+  <p class="text-gray-600 mb-8 text-lg">
+    Manage your tasks efficiently with our new cleaner, faster, and more
+    beautiful interface.
+  </p>
+  <div class="space-x-4">
+    <a
+      href="{% url 'todos' %}"
+      class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md inline-block transform hover:scale-105"
+    >
+      View Todos
+    </a>
+    <a
+      href="{% url 'create_todo' %}"
+      class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md inline-block transform hover:scale-105"
+    >
+      Create New
+    </a>
+  </div>
+</div>
 {% endblock %}
