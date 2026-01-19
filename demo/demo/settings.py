@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-@ub+lbflcg73$ak0-e1vk6#9xn4^s(tun$v7pwafr7rbyf&_=4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS: list[str] = []
 
 
 # Application definition
@@ -37,6 +37,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "tailwind",
+    "theme",
+    "django_browser_reload",
     "myapp",
 ]
 
@@ -48,9 +51,14 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 
 ROOT_URLCONF = "demo.urls"
+
+NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
+
+TAILWIND_APP_NAME = "theme"
 
 TEMPLATES = [
     {
