@@ -13,8 +13,11 @@ class URLShortener(models.Model):
 
 class UserClick(models.Model):
     url_shortener = models.ForeignKey(URLShortener, on_delete=models.CASCADE)
-    clicked_at = models.DateTimeField(auto_now_add=True)
     user_ip = models.GenericIPAddressField()
+    clicked_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("url_shortener", "user_ip")
 
     def __str__(self):
         return f"Click on {self.url_shortener.short_code} at {self.clicked_at} from {self.user_ip}"

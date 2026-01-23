@@ -3,6 +3,8 @@ from .models import URLShortener, UserClick
 
 
 class URLShortenerSerializer(serializers.ModelSerializer):
+    short_code = serializers.CharField(read_only=True)
+
     class Meta:
         model = URLShortener
         fields = ["id", "original_url", "short_code", "created_at", "updated_at"]
