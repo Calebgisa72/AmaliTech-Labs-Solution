@@ -6,9 +6,15 @@ from .serializers import URLShortenerSerializer
 from .services import UrlShortenerService
 from .helpers import get_client_ip
 from rest_framework.decorators import api_view
+from drf_spectacular.utils import extend_schema
 
 
 class URLShortenerView(APIView):
+    @extend_schema(
+        request=URLShortenerSerializer,
+        responses={201: URLShortenerSerializer},
+        description="Shorten a URL",
+    )
     def post(self, request):
         serializer = URLShortenerSerializer(data=request.data)
         if serializer.is_valid():
