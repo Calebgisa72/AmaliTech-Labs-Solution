@@ -1,0 +1,9 @@
+﻿Django
+djangorestframework
+django-redis
+python-dotenv
+gunicorn
+drf-spectacular
+asgiref
+sqlparse
+tzdata
