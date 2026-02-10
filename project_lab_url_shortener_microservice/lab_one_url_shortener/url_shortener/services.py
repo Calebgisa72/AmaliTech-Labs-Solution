@@ -45,7 +45,9 @@ class UrlShortenerService:
                 "short_code": existing.short_code,
                 "original_url": existing.original_url,
                 "custom_alias": existing.custom_alias,
-                "expires_at": existing.expires_at.isoformat(),
+                "expires_at": (
+                    existing.expires_at.isoformat() if existing.expires_at else None
+                ),
                 "title": existing.title,
                 "description": existing.description,
                 "favicon": existing.favicon,
@@ -69,6 +71,7 @@ class UrlShortenerService:
             description,
             favicon,
             tags,
+            owner,
         )
 
         return URLSerializer(new_url).data
@@ -78,7 +81,7 @@ class UrlShortenerService:
             url_obj = self.url_repository.get_by_short_code_or_custom_alias(
                 identifier=identifier
             )
-            return URLSerializer(url_obj).data
+            return url_obj
         except URL.DoesNotExist:
             return None
 

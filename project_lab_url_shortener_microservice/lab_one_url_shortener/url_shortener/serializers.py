@@ -1,6 +1,6 @@
-from datetime import timezone
+from django.utils import timezone
 from rest_framework import serializers
-from .models import URL, UserClick
+from .models import URL, UserClick, Tag
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 
@@ -23,7 +23,17 @@ class URLSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["short_code", "created_at", "click_count", "updated_at"]
+        read_only_fields = [
+            "short_code",
+            "owner",
+            "created_at",
+            "click_count",
+            "updated_at",
+        ]
+
+    tags = serializers.SlugRelatedField(
+        many=True, slug_field="name", queryset=Tag.objects.all()
+    )
 
     def validate_original_url(self, value):
         validator = URLValidator(schemes=["http", "https"])

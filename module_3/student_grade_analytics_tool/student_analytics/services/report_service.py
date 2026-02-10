@@ -20,9 +20,8 @@ class ReportService:
             for course in student.courses
             if isinstance(course.grade, (int, float))
         ]
-        from typing import Union
 
-        rounded_grades: List[Union[float, int]] = [int(round(g)) for g in all_grades]
+        rounded_grades: List[int] = [int(round(g)) for g in all_grades]
         distribution = AnalysisService.calculate_distribution(rounded_grades)
 
         grouped_by_major = AnalysisService.group_by_major(students)

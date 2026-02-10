@@ -3,7 +3,7 @@ from .serializers import (
 )
 from django.db.models import Q
 from django.db.models import Count
-from .models import URL, UserClick
+from .models import URL, UserClick, User
 
 
 class URLRepository:
@@ -43,10 +43,12 @@ class URLRepository:
         description: str | None = None,
         favicon: str | None = None,
         tags: list | None = None,
+        owner: User | None = None,
     ):
         url = URL.objects.create(
             original_url=original_url,
             short_code=short_code,
+            owner=owner,
             custom_alias=custom_alias,
             expires_at=expires_at,
             title=title,

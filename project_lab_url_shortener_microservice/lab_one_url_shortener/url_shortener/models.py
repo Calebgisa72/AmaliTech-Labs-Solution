@@ -52,7 +52,9 @@ class URL(models.Model):
     original_url = models.URLField()
     short_code = models.CharField(max_length=10, unique=True, db_index=True)
     custom_alias = models.CharField(null=True, blank=True, unique=True)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="urls")
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="urls", null=True, blank=True
+    )
     is_active = models.BooleanField(default=True)
     expires_at = models.DateTimeField(null=True, blank=True)
     title = models.CharField(max_length=255, null=True, blank=True)
