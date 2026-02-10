@@ -1,6 +1,10 @@
-from .models import URLShortener, UserClick
+from .serializers import (
+    URLSerializer,
+)
+from .models import User
+from .repositories import URLRepository
+from .models import URL
 from .helpers import generate_short_code
-from django.db.models import Count
 from .redis_client import get_redis_client
 import json
 
@@ -21,71 +25,93 @@ class CachingService:
 
 
 class UrlShortenerService:
-    @staticmethod
-    def shorten_url(original_url: str):
-        existing = URLShortener.objects.filter(original_url=original_url).first()
+    def __init__(self, url_repository: URLRepository):
+        self.url_repository = url_repository
+
+    def shorten_url(
+        self,
+        original_url: str,
+        owner: User,
+        custom_alias: str | None = None,
+        expires_at: str | None = None,
+        title: str | None = None,
+        description: str | None = None,
+        favicon: str | None = None,
+        tags: list | None = None,
+    ):
+        existing = self.url_repository.get_by_original_url(original_url)
         if existing:
             return {
                 "short_code": existing.short_code,
                 "original_url": existing.original_url,
+                "custom_alias": existing.custom_alias,
+                "expires_at": existing.expires_at.isoformat(),
+                "title": existing.title,
+                "description": existing.description,
+                "favicon": existing.favicon,
+                "click_count": existing.click_count,
+                "tags": existing.tags,
                 "created_at": existing.created_at.isoformat(),
+                "updated_at": existing.updated_at.isoformat(),
             }
 
         while True:
             short_code = generate_short_code()
-            if not URLShortener.objects.filter(short_code=short_code).exists():
+            if not self.url_repository.get_by_short_code(short_code):
                 break
 
-        new_url = URLShortener.objects.create(
-            original_url=original_url, short_code=short_code
+        new_url = self.url_repository.create_url(
+            original_url,
+            short_code,
+            custom_alias,
+            expires_at,
+            title,
+            description,
+            favicon,
+            tags,
         )
 
-        return {
-            "short_code": new_url.short_code,
-            "original_url": new_url.original_url,
-            "created_at": new_url.created_at.isoformat(),
-        }
+        return URLSerializer(new_url).data
 
-    @staticmethod
-    def get_original_url(short_code: str):
+    def get_original_url(self, identifier: str):
         try:
-            url_obj = URLShortener.objects.get(short_code=short_code)
-            return {
-                "short_code": url_obj.short_code,
-                "original_url": url_obj.original_url,
-            }
-        except URLShortener.DoesNotExist:
+            url_obj = self.url_repository.get_by_short_code_or_custom_alias(
+                identifier=identifier
+            )
+            return URLSerializer(url_obj).data
+        except URL.DoesNotExist:
             return None
 
-    @staticmethod
-    def record_click(short_code: str, original_url: str, user_ip: str):
+    def record_click(
+        self,
+        identifier: str,
+        user_ip: str,
+        city: str,
+        country: str,
+        user_agent: str,
+        referrer: str,
+    ):
         try:
-            url_obj = URLShortener.objects.get(short_code=short_code)
-            UserClick.objects.get_or_create(url_shortener=url_obj, user_ip=user_ip)
-            return True
-        except URLShortener.DoesNotExist:
-            return False
+            new_click = self.url_repository.record_click(
+                identifier, user_ip, city, country, user_agent, referrer
+            )
+            return new_click
+        except URL.DoesNotExist:
+            return None
 
-    @staticmethod
-    def get_top_clicked(limit=4):
+    def get_top_clicked(self, limit=4):
         cached_results = CachingService.get_top_clicked()
         if cached_results:
             return cached_results
-        top_urls = (
-            UserClick.objects.values(
-                "url_shortener__short_code", "url_shortener__original_url"
-            )
-            .annotate(clicks=Count("id"))
-            .order_by("-clicks")[:limit]
-        )
+        top_urls = self.url_repository.top_urls(limit)
 
         results = []
         for item in top_urls:
             results.append(
                 {
-                    "short_code": item["url_shortener__short_code"],
-                    "original_url": item["url_shortener__original_url"],
-                    "clicks": item["clicks"],
+                    "short_code": item.short_code,
+                    "original_url": item.original_url,
+                    "click_count": item.click_count,
                 }
             )
 
@@ -94,18 +120,15 @@ class UrlShortenerService:
 
         return results
 
-    @staticmethod
-    def get_user_clicks(user_ip: str):
-        clicks = UserClick.objects.filter(user_ip=user_ip).select_related(
-            "url_shortener"
-        )
+    def get_user_clicks(self, user_ip: str):
+        clicks = self.url_repository.get_user_clicks(user_ip)
 
         results = []
         for click in clicks:
             results.append(
                 {
-                    "short_code": click.url_shortener.short_code,
-                    "original_url": click.url_shortener.original_url,
+                    "short_code": click.url.short_code,
+                    "original_url": click.url.original_url,
                     "clicked_at": click.clicked_at.isoformat(),
                     "user_ip": click.user_ip,
                 }

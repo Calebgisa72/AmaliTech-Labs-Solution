@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     "url_shortener",
 ]
 
+AUTH_USER_MODEL = "url_shortener.User"
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

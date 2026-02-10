@@ -1,25 +1,50 @@
+from datetime import timezone
+from .models import User
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import HttpResponseRedirect, Http404
-from .serializers import URLShortenerSerializer
+from .serializers import URLSerializer
 from .services import UrlShortenerService
 from .helpers import get_client_ip
 from rest_framework.decorators import api_view
 from drf_spectacular.utils import extend_schema
 
 
-class URLShortenerView(APIView):
+from .repositories import URLRepository
+
+
+class URLView(APIView):
     @extend_schema(
-        request=URLShortenerSerializer,
-        responses={201: URLShortenerSerializer},
+        request=URLSerializer,
+        responses={201: URLSerializer},
         description="Shorten a URL",
     )
     def post(self, request):
-        serializer = URLShortenerSerializer(data=request.data)
+        serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
-            original_url = serializer.validated_data["original_url"]  # type: ignore
-            result = UrlShortenerService.shorten_url(original_url)
+            original_url: str = serializer.validated_data.get("original_url")
+            custom_alias: str | None = serializer.validated_data.get("custom_alias")
+            expires_at: str | None = serializer.validated_data.get("expires_at")
+            title: str | None = serializer.validated_data.get("title")
+            description: str | None = serializer.validated_data.get("description")
+            favicon: str | None = serializer.validated_data.get("favicon")
+            tags: list | None = serializer.validated_data.get("tags")
+            user: User = request.user
+
+            repo = URLRepository()
+            service = UrlShortenerService(repo)
+
+            result = service.shorten_url(
+                original_url,
+                user,
+                custom_alias,
+                expires_at,
+                title,
+                description,
+                favicon,
+                tags,
+            )
             return Response(
                 result,
                 status=status.HTTP_201_CREATED,
@@ -28,25 +53,41 @@ class URLShortenerView(APIView):
 
 
 class RedirectURLView(APIView):
-    def get(self, request, short_code):
-        url_data = UrlShortenerService.get_original_url(short_code)
+    def get(self, request, identifier):
+        repo = URLRepository()
+        service = UrlShortenerService(repo)
+        url_data = service.get_original_url(identifier)
         if not url_data:
-            raise Http404("Short URL not found")
+            raise Http404("URL not found")
+
+        if url_data.expires_at and url_data.expires_at < timezone.now():
+            raise Http404("URL has expired")
+
+        if not url_data.is_active:
+            raise Http404("URL is no longer active")
 
         user_ip = get_client_ip(request)
-        UrlShortenerService.record_click(short_code, url_data["original_url"], user_ip)
+        user_agent = request.META.get("HTTP_USER_AGENT", "")
+        referrer = request.META.get("HTTP_REFERER", "")
+        city = request.query_params.get("city")
+        country = request.query_params.get("country")
+        service.record_click(identifier, user_ip, user_agent, referrer, city, country)
 
-        return HttpResponseRedirect(url_data["original_url"])
+        return HttpResponseRedirect(url_data.original_url)
 
 
 @api_view(["GET"])
 def top_clicked_urls(request):
-    results = UrlShortenerService.get_top_clicked()
+    repo = URLRepository()
+    service = UrlShortenerService(repo)
+    results = service.get_top_clicked()
     return Response(results, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
 def get_user_clicks(request):
     user_ip = get_client_ip(request)
-    results = UrlShortenerService.get_user_clicks(user_ip)
+    repo = URLRepository()
+    service = UrlShortenerService(repo)
+    results = service.get_user_clicks(user_ip)
     return Response(results, status=status.HTTP_200_OK)

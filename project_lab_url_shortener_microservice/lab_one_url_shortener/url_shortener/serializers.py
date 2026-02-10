@@ -1,14 +1,29 @@
+from datetime import timezone
 from rest_framework import serializers
-from .models import URLShortener, UserClick
+from .models import URL, UserClick
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 
 
-class URLShortenerSerializer(serializers.ModelSerializer):
+class URLSerializer(serializers.ModelSerializer):
     class Meta:
-        model = URLShortener
-        fields = ["original_url", "short_code", "created_at"]
-        read_only_fields = ["short_code", "created_at"]
+        model = URL
+        fields = [
+            "original_url",
+            "short_code",
+            "owner",
+            "tags",
+            "custom_alias",
+            "is_active",
+            "expires_at",
+            "title",
+            "description",
+            "favicon",
+            "click_count",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["short_code", "created_at", "click_count", "updated_at"]
 
     def validate_original_url(self, value):
         validator = URLValidator(schemes=["http", "https"])
@@ -20,15 +35,42 @@ class URLShortenerSerializer(serializers.ModelSerializer):
             )
         return value
 
+    def validate_custom_alias(self, value):
+        if URL.objects.filter(custom_alias=value).exists():
+            raise serializers.ValidationError("Custom alias already exists.")
+        return value
+
+    def validate_expires_at(self, value):
+        if value < timezone.now():
+            raise serializers.ValidationError("Expires at must be in the future.")
+        return value
+
 
 class UserClickSerializer(serializers.ModelSerializer):
-    short_code = serializers.CharField(
-        source="url_shortener.short_code", read_only=True
-    )
-    original_url = serializers.URLField(
-        source="url_shortener.original_url", read_only=True
-    )
-
     class Meta:
         model = UserClick
-        fields = ["short_code", "original_url", "clicked_at", "user_ip"]
+        fields = [
+            "url",
+            "user_ip",
+            "city",
+            "country",
+            "clicked_at",
+            "user_agent",
+            "referrer",
+        ]
+        read_only_fields = ["clicked_at"]
+
+    def validate_url(self, value):
+        if not URL.objects.filter(short_code=value).exists():
+            raise serializers.ValidationError("URL does not exist.")
+        return value
+
+    def validate_referrer(self, value):
+        validator = URLValidator(schemes=["http", "https"])
+        try:
+            validator(value)
+        except ValidationError:
+            raise serializers.ValidationError(
+                "Enter a valid URL starting with http or https."
+            )
+        return value
