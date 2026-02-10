@@ -94,7 +94,8 @@ def main():
         output_dir = args.output.parent
         if output_dir == Path("."):
             output_dir = Path("output")
-            output_dir.mkdir(parents=True, exist_ok=True)
+
+        output_dir.mkdir(parents=True, exist_ok=True)
 
         all_grades = [
             course.grade

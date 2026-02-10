@@ -1,5 +1,7 @@
 from datetime import timezone
 from django.contrib.auth.models import AbstractUser
+from datetime import timezone
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
@@ -49,10 +51,58 @@ class URLManager(models.Manager):
 
 
 class URL(models.Model):
+class User(AbstractUser):
+    email = models.EmailField(unique=True, blank=False, null=False)
+    is_premium = models.BooleanField(default=False)
+    tier = models.CharField(
+        max_length=10,
+        choices=[("Free", "Free"), ("Premium", "Premium"), ("Admin", "Admin")],
+        default="Free",
+    )
+
+
+class TagCategory(models.TextChoices):
+    MARKETING = "Marketing", "Marketing"
+    SOCIAL = "Social", "Social"
+    NEWS = "News", "News"
+    BLOG = "Blog", "Blog"
+    E_COMMERCE = "E-Commerce", "E-Commerce"
+    EDUCATION = "Education", "Education"
+    ENTERTAINMENT = "Entertainment", "Entertainment"
+    TECHNOLOGY = "Technology", "Technology"
+    OTHER = "Other", "Other"
+
+
+class Tag(models.Model):
+    name = models.CharField(
+        max_length=50,
+        unique=True,
+        choices=TagCategory.choices,
+        default=TagCategory.OTHER,
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class URLManager(models.Manager):
+    def top_urls(self, limit=4):
+        return self.order_by("-click_count")[:limit]
+
+    def active(self):
+        return self.filter(is_active=True)
+
+    def expired_urls(self):
+        return self.filter(expires_at__lte=timezone.now())
+
+
+class URL(models.Model):
     original_url = models.URLField()
     short_code = models.CharField(max_length=10, unique=True, db_index=True)
     custom_alias = models.CharField(null=True, blank=True, unique=True)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="urls")
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="urls", null=True, blank=True
+    )
     is_active = models.BooleanField(default=True)
     expires_at = models.DateTimeField(null=True, blank=True)
     title = models.CharField(max_length=255, null=True, blank=True)
@@ -69,20 +119,31 @@ class URL(models.Model):
     class Meta:
         ordering = ["-created_at"]
 
+    class Meta:
+        ordering = ["-created_at"]
+
     def __str__(self):
         return f"{self.short_code} -> {self.original_url}"
 
 
 class UserClick(models.Model):
     url = models.ForeignKey(URL, on_delete=models.CASCADE, related_name="clicks")
+    url = models.ForeignKey(URL, on_delete=models.CASCADE, related_name="clicks")
     user_ip = models.GenericIPAddressField()
+    city = models.CharField(max_length=100, null=True, blank=True)
+    country = models.CharField(max_length=100, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     country = models.CharField(max_length=100, null=True, blank=True)
     clicked_at = models.DateTimeField(auto_now_add=True)
     user_agent = models.TextField()
     referrer = models.URLField(null=True, blank=True)
+    user_agent = models.TextField()
+    referrer = models.URLField(null=True, blank=True)
 
     def __str__(self):
+        return (
+            f"Click on {self.url.short_code} at {self.clicked_at} from {self.user_ip}"
+        )
         return (
             f"Click on {self.url.short_code} at {self.clicked_at} from {self.user_ip}"
         )

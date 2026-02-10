@@ -6,7 +6,7 @@ from collections import Counter, defaultdict, OrderedDict
 class AnalysisService:
 
     @staticmethod
-    def calculate_distribution(grades: List[Union[float, int]]) -> Counter:
+    def calculate_distribution(grades: List[int]) -> Counter:
         """
         Calculates the distribution of grades.
 

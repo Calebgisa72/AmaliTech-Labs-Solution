@@ -45,7 +45,7 @@ module_3/
 
 ## Usage
 
-_Instructions for running the tool will be added in Phase 2._
+python -m student_analytics.main data/sample_students.csv
 
 ## Testing
 
