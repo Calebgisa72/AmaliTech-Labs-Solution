@@ -1,8 +1,11 @@
 from django.utils import timezone
 from rest_framework import serializers
 from .models import URL, UserClick, Tag
+from django.contrib.auth import get_user_model
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
+
+User = get_user_model()
 
 
 class URLSerializer(serializers.ModelSerializer):
@@ -69,18 +72,3 @@ class UserClickSerializer(serializers.ModelSerializer):
             "referrer",
         ]
         read_only_fields = ["clicked_at"]
-
-    def validate_url(self, value):
-        if not URL.objects.filter(short_code=value).exists():
-            raise serializers.ValidationError("URL does not exist.")
-        return value
-
-    def validate_referrer(self, value):
-        validator = URLValidator(schemes=["http", "https"])
-        try:
-            validator(value)
-        except ValidationError:
-            raise serializers.ValidationError(
-                "Enter a valid URL starting with http or https."
-            )
-        return value

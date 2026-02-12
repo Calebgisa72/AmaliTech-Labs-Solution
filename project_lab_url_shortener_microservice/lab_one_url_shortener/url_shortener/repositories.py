@@ -3,7 +3,12 @@ from .serializers import (
 )
 from django.db.models import Q
 from django.db.models import Count
-from .models import URL, UserClick, User
+from .models import URL, UserClick
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from core.models import User
 
 
 class URLRepository:
@@ -37,13 +42,13 @@ class URLRepository:
         self,
         original_url: str,
         short_code: str,
+        owner: "User | None" = None,  # To avoid circular import
         custom_alias: str | None = None,
         expires_at: str | None = None,
         title: str | None = None,
         description: str | None = None,
         favicon: str | None = None,
         tags: list | None = None,
-        owner: User | None = None,
     ):
         url = URL.objects.create(
             original_url=original_url,
@@ -80,7 +85,7 @@ class URLRepository:
 
         serializer = UserClickSerializer(
             data={
-                "url": url_obj,
+                "url": url_obj.id,
                 "user_ip": user_ip,
                 "city": city,
                 "country": country,
