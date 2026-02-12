@@ -20,6 +20,9 @@ class URLRepository:
             .first()
         )
 
+    def count_active_urls(self, user):
+        return URL.objects.filter(owner=user, is_active=True).count()
+
     def get_by_short_code_or_custom_alias(self, identifier: str):
         query = Q(short_code=identifier) | Q(custom_alias=identifier)
 
@@ -42,7 +45,7 @@ class URLRepository:
         self,
         original_url: str,
         short_code: str,
-        owner: "User | None" = None,  # To avoid circular import
+        owner: "User",  # To avoid circular import
         custom_alias: str | None = None,
         expires_at: str | None = None,
         title: str | None = None,
@@ -97,6 +100,19 @@ class URLRepository:
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return serializer.data
+
+    def update_url(self, url_obj: URL, data: dict):
+        tags = data.pop("tags", None)
+        for key, value in data.items():
+            setattr(url_obj, key, value)
+        url_obj.save()
+        if tags is not None:
+            url_obj.tags.set(tags)
+        return url_obj
+
+    def delete_url(self, url_obj: URL):
+        url_obj.delete()
+        return True
 
     def get_clicks_per_country(self, identifier: str | None = None):
         queryset = UserClick.objects.all()

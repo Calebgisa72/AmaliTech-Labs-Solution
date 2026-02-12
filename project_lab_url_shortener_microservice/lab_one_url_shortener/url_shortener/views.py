@@ -9,9 +9,13 @@ from .helpers import get_client_ip
 from rest_framework.decorators import api_view
 from drf_spectacular.utils import extend_schema
 from .repositories import URLRepository
+from rest_framework.permissions import IsAuthenticated
+from core.permissions import IsOwnerOrReadOnly
 
 
 class URLView(APIView):
+    permission_classes = [IsAuthenticated]
+
     @extend_schema(
         request=URLSerializer,
         responses={201: URLSerializer},
@@ -20,27 +24,31 @@ class URLView(APIView):
     def post(self, request):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
-            original_url: str = serializer.validated_data.get("original_url")
-            custom_alias: str | None = serializer.validated_data.get("custom_alias")
-            expires_at: str | None = serializer.validated_data.get("expires_at")
-            title: str | None = serializer.validated_data.get("title")
-            description: str | None = serializer.validated_data.get("description")
-            favicon: str | None = serializer.validated_data.get("favicon")
-            tags: list | None = serializer.validated_data.get("tags")
-            user = request.user if request.user.is_authenticated else None
+            user = request.user
+            if user.tier == "Free":
+                active_count = URLRepository().count_active_urls(user)
+                if active_count >= 10:
+                    return Response(
+                        {
+                            "message": "Free users are limited to 10 active URLs. Upgrade to Premium for unlimited URLs."
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
+                if serializer.validated_data.get("custom_alias"):
+                    return Response(
+                        {
+                            "message": "Custom aliases are only available for Premium users."
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
 
             repo = URLRepository()
             service = UrlShortenerService(repo)
 
             result = service.shorten_url(
-                original_url,
-                user,
-                custom_alias,
-                expires_at,
-                title,
-                description,
-                favicon,
-                tags,
+                **serializer.validated_data,
+                owner=request.user,
             )
             return Response(
                 result,
@@ -55,12 +63,16 @@ class RedirectURLView(APIView):
         service = UrlShortenerService(repo)
         url_data = service.get_original_url(identifier)
         if not url_data:
-            raise Http404("URL not found")
+            return Response(
+                {"message": "URL not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
-        if url_data.expires_at and url_data.expires_at < timezone.now():
+        expires_at = url_data.get("expires_at")
+        if expires_at and expires_at < timezone.now():
             raise Http404("URL has expired")
 
-        if not url_data.is_active:
+        if not url_data.get("is_active"):
             raise Http404("URL is no longer active")
 
         user_ip = get_client_ip(request)
@@ -77,7 +89,64 @@ class RedirectURLView(APIView):
             country=country,
         )
 
-        return HttpResponseRedirect(url_data.original_url)
+        return HttpResponseRedirect(url_data["original_url"])
+
+
+class URLDetailView(APIView):
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+
+    @extend_schema(
+        request=URLSerializer,
+        responses={200: URLSerializer},
+        description="Update a URL",
+    )
+    def put(self, request, identifier):
+        repo = URLRepository()
+        obj = repo.get_by_short_code_or_custom_alias(identifier)
+        if not obj:
+            return Response(
+                {"message": "URL not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        self.check_object_permissions(request, obj)
+        serializer = URLSerializer(data=request.data, partial=True)
+        if serializer.is_valid():
+            # Check tier limits for updates
+            if request.user.tier == "Free":
+                if "custom_alias" in serializer.validated_data:
+                    return Response(
+                        {"message": "Free users cannot set or update custom aliases."},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
+            service = UrlShortenerService(repo)
+
+            result = service.update_url(
+                obj,
+                serializer.validated_data,
+            )
+            return Response(result, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        responses={200: URLSerializer},
+        description="Delete a URL",
+    )
+    def delete(self, request, identifier):
+        repo = URLRepository()
+        obj = repo.get_by_short_code_or_custom_alias(identifier)
+        if not obj:
+            return Response(
+                {"message": "URL not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        self.check_object_permissions(request, obj)
+        service = UrlShortenerService(repo)
+
+        result = service.delete_url(obj)
+        if result:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(["GET"])
