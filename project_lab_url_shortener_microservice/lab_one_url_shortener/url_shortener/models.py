@@ -1,16 +1,6 @@
 from datetime import timezone
-from django.contrib.auth.models import AbstractUser
 from django.db import models
-
-
-class User(AbstractUser):
-    email = models.EmailField(unique=True, blank=False, null=False)
-    is_premium = models.BooleanField(default=False)
-    tier = models.CharField(
-        max_length=10,
-        choices=[("Free", "Free"), ("Premium", "Premium"), ("Admin", "Admin")],
-        default="Free",
-    )
+from django.conf import settings
 
 
 class TagCategory(models.TextChoices):
@@ -53,7 +43,11 @@ class URL(models.Model):
     short_code = models.CharField(max_length=10, unique=True, db_index=True)
     custom_alias = models.CharField(null=True, blank=True, unique=True)
     owner = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="urls", null=True, blank=True
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="urls",
+        null=True,
+        blank=True,
     )
     is_active = models.BooleanField(default=True)
     expires_at = models.DateTimeField(null=True, blank=True)

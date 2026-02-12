@@ -1,12 +1,16 @@
 from .serializers import (
     URLSerializer,
 )
-from .models import User
 from .repositories import URLRepository
 from .models import URL
 from .helpers import generate_short_code
 from .redis_client import get_redis_client
 import json
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from core.models import User
 
 
 class CachingService:
@@ -31,7 +35,7 @@ class UrlShortenerService:
     def shorten_url(
         self,
         original_url: str,
-        owner: User,
+        owner: "User | None" = None,
         custom_alias: str | None = None,
         expires_at: str | None = None,
         title: str | None = None,
@@ -63,15 +67,15 @@ class UrlShortenerService:
                 break
 
         new_url = self.url_repository.create_url(
-            original_url,
-            short_code,
-            custom_alias,
-            expires_at,
-            title,
-            description,
-            favicon,
-            tags,
-            owner,
+            original_url=original_url,
+            short_code=short_code,
+            owner=owner,
+            custom_alias=custom_alias,
+            expires_at=expires_at,
+            title=title,
+            description=description,
+            favicon=favicon,
+            tags=tags,
         )
 
         return URLSerializer(new_url).data
@@ -96,7 +100,7 @@ class UrlShortenerService:
     ):
         try:
             new_click = self.url_repository.record_click(
-                identifier, user_ip, city, country, user_agent, referrer
+                identifier, user_ip, user_agent, referrer, city, country
             )
             return new_click
         except URL.DoesNotExist:

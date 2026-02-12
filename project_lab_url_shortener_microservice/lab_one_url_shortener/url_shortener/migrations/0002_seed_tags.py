@@ -1,9 +1,10 @@
 from django.db import migrations
 
 
-def seed_tags(apps, schema_editor):
+def create_initial_tags(apps, schema_editor):
     Tag = apps.get_model("url_shortener", "Tag")
-    TAG_CATEGORIES = [
+    # Use the choices from the model definition directly or hardcode to avoid imports
+    TAG_CHOICES = [
         ("Marketing", "Marketing"),
         ("Social", "Social"),
         ("News", "News"),
@@ -15,17 +16,21 @@ def seed_tags(apps, schema_editor):
         ("Other", "Other"),
     ]
 
-    for value, label in TAG_CATEGORIES:
-        if not Tag.objects.filter(name=label).exists():
-            Tag.objects.create(name=label)
+    for _, name in TAG_CHOICES:
+        Tag.objects.get_or_create(name=name)
+
+
+def remove_tags(apps, schema_editor):
+    Tag = apps.get_model("url_shortener", "Tag")
+    Tag.objects.all().delete()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("url_shortener", "0003_remove_url_url_shorten_short_c_49214d_idx_and_more"),
+        ("url_shortener", "0001_initial"),
     ]
 
     operations = [
-        migrations.RunPython(seed_tags),
+        migrations.RunPython(create_initial_tags, remove_tags),
     ]

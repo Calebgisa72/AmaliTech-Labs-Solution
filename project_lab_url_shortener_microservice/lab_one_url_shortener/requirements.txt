@@ -8,3 +8,4 @@ asgiref
 sqlparse
 tzdata
 psycopg2-binary
+djangorestframework-simplejwt
