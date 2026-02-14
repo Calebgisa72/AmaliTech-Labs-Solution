@@ -1,3 +1,4 @@
+from url_shortener.serializers import UserClickSerializer
 from .serializers import (
     URLSerializer,
 )
@@ -35,7 +36,7 @@ class UrlShortenerService:
     def shorten_url(
         self,
         original_url: str,
-        owner: "User | None" = None,
+        owner: "User",  # To avoid circular import
         custom_alias: str | None = None,
         expires_at: str | None = None,
         title: str | None = None,
@@ -45,21 +46,7 @@ class UrlShortenerService:
     ):
         existing = self.url_repository.get_by_original_url(original_url)
         if existing:
-            return {
-                "short_code": existing.short_code,
-                "original_url": existing.original_url,
-                "custom_alias": existing.custom_alias,
-                "expires_at": (
-                    existing.expires_at.isoformat() if existing.expires_at else None
-                ),
-                "title": existing.title,
-                "description": existing.description,
-                "favicon": existing.favicon,
-                "click_count": existing.click_count,
-                "tags": existing.tags,
-                "created_at": existing.created_at.isoformat(),
-                "updated_at": existing.updated_at.isoformat(),
-            }
+            return URLSerializer(existing).data
 
         while True:
             short_code = generate_short_code()
@@ -85,7 +72,7 @@ class UrlShortenerService:
             url_obj = self.url_repository.get_by_short_code_or_custom_alias(
                 identifier=identifier
             )
-            return url_obj
+            return URLSerializer(url_obj).data
         except URL.DoesNotExist:
             return None
 
@@ -102,9 +89,23 @@ class UrlShortenerService:
             new_click = self.url_repository.record_click(
                 identifier, user_ip, user_agent, referrer, city, country
             )
-            return new_click
+            return UserClickSerializer(new_click).data
         except URL.DoesNotExist:
             return None
+
+    def update_url(self, url_obj: URL, data: dict):
+        try:
+            updated_url = self.url_repository.update_url(url_obj, data)
+            return URLSerializer(updated_url).data
+        except URL.DoesNotExist:
+            return None
+
+    def delete_url(self, url_obj: URL):
+        try:
+            self.url_repository.delete_url(url_obj)
+            return True
+        except URL.DoesNotExist:
+            return False
 
     def get_top_clicked(self, limit=4):
         cached_results = CachingService.get_top_clicked()

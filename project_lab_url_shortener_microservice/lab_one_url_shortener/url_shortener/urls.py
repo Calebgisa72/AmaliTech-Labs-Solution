@@ -4,6 +4,7 @@ from .views import (
     RedirectURLView,
     get_user_clicks,
     top_clicked_urls,
+    URLDetailView,
 )
 
 urlpatterns = [
@@ -11,4 +12,5 @@ urlpatterns = [
     path("go/<str:identifier>/", RedirectURLView.as_view(), name="redirect_url"),
     path("top-clicked/", top_clicked_urls, name="top-clicked"),
     path("user-clicks/", get_user_clicks, name="get_user_clicks"),
+    path("<str:identifier>/", URLDetailView.as_view(), name="url_detail"),
 ]
