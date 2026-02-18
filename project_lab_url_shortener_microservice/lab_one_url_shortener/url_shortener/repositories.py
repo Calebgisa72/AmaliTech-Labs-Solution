@@ -2,7 +2,7 @@ from .serializers import (
     UserClickSerializer,
 )
 from django.db.models import Q
-from django.db.models import Count
+from django.db.models import Count, F
 from .models import URL, UserClick
 
 from typing import TYPE_CHECKING
@@ -83,8 +83,9 @@ class URLRepository:
         country: str,
     ):
         url_obj = URL.objects.get(Q(short_code=identifier) | Q(custom_alias=identifier))
-        url_obj.click_count += 1
+        url_obj.click_count = F("click_count") + 1
         url_obj.save()
+        url_obj.refresh_from_db()
 
         serializer = UserClickSerializer(
             data={

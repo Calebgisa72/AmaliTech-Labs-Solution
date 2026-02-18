@@ -5,6 +5,7 @@ from rest_framework import status
 from django.http import HttpResponseRedirect, Http404
 from .serializers import URLSerializer
 from .services import UrlShortenerService
+from .tasks import track_click_task
 from .helpers import get_client_ip
 from rest_framework.decorators import api_view
 from drf_spectacular.utils import extend_schema
@@ -37,9 +38,7 @@ class URLView(APIView):
 
                 if serializer.validated_data.get("custom_alias"):
                     return Response(
-                        {
-                            "message": "Custom aliases are only available for Premium users."
-                        },
+                        {"message": "Upgrade to Premium to use custom aliases."},
                         status=status.HTTP_403_FORBIDDEN,
                     )
 
@@ -69,18 +68,24 @@ class RedirectURLView(APIView):
             )
 
         expires_at = url_data.get("expires_at")
-        if expires_at and expires_at < timezone.now():
-            raise Http404("URL has expired")
+        if expires_at:
+            from django.utils.dateparse import parse_datetime
+
+            if parse_datetime(expires_at) < timezone.now():
+                raise Http404("URL has expired")
 
         if not url_data.get("is_active"):
             raise Http404("URL is no longer active")
 
         user_ip = get_client_ip(request)
-        user_agent = request.META.get("HTTP_USER_AGENT", "")
+        user_agent = request.META.get("HTTP_USER_AGENT", "Unknown")
         referrer = request.META.get("HTTP_REFERER", "")
         city = request.query_params.get("city")
         country = request.query_params.get("country")
-        service.record_click(
+        city = request.query_params.get("city")
+        country = request.query_params.get("country")
+
+        track_click_task.delay(
             identifier=identifier,
             user_ip=user_ip,
             user_agent=user_agent,

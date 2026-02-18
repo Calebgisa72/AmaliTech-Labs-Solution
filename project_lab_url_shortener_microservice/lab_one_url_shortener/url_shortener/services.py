@@ -1,4 +1,3 @@
-from url_shortener.serializers import UserClickSerializer
 from .serializers import (
     URLSerializer,
 )
@@ -27,6 +26,24 @@ class CachingService:
         if cached_data:
             return json.loads(cached_data)
         return None
+
+    @staticmethod
+    def cache_url(identifier, data, timeout=43200):
+        redis_client = get_redis_client()
+        redis_client.setex(f"url:{identifier}", timeout, json.dumps(data))
+
+    @staticmethod
+    def get_cached_url(identifier):
+        redis_client = get_redis_client()
+        cached_data = redis_client.get(f"url:{identifier}")
+        if cached_data:
+            return json.loads(cached_data)
+        return None
+
+    @staticmethod
+    def delete_cached_url(identifier):
+        redis_client = get_redis_client()
+        redis_client.delete(f"url:{identifier}")
 
 
 class UrlShortenerService:
@@ -68,11 +85,20 @@ class UrlShortenerService:
         return URLSerializer(new_url).data
 
     def get_original_url(self, identifier: str):
+        cached_data = CachingService.get_cached_url(identifier)
+        if cached_data:
+            return cached_data
         try:
             url_obj = self.url_repository.get_by_short_code_or_custom_alias(
                 identifier=identifier
             )
-            return URLSerializer(url_obj).data
+            data = URLSerializer(url_obj).data
+
+            CachingService.cache_url(url_obj.short_code, data)
+            if url_obj.custom_alias:
+                CachingService.cache_url(url_obj.custom_alias, data)
+
+            return data
         except URL.DoesNotExist:
             return None
 
@@ -89,19 +115,33 @@ class UrlShortenerService:
             new_click = self.url_repository.record_click(
                 identifier, user_ip, user_agent, referrer, city, country
             )
-            return UserClickSerializer(new_click).data
+
+            # Invalidate Caches
+            CachingService.delete_cached_url(identifier)
+            redis_client = get_redis_client()
+            redis_client.delete("top_clicked_urls")
+
+            return new_click
         except URL.DoesNotExist:
             return None
 
     def update_url(self, url_obj: URL, data: dict):
         try:
             updated_url = self.url_repository.update_url(url_obj, data)
+            # Invalidate Cache
+            CachingService.delete_cached_url(updated_url.short_code)
+            if updated_url.custom_alias:
+                CachingService.delete_cached_url(updated_url.custom_alias)
             return URLSerializer(updated_url).data
         except URL.DoesNotExist:
             return None
 
     def delete_url(self, url_obj: URL):
         try:
+            CachingService.delete_cached_url(url_obj.short_code)
+            if url_obj.custom_alias:
+                CachingService.delete_cached_url(url_obj.custom_alias)
+
             self.url_repository.delete_url(url_obj)
             return True
         except URL.DoesNotExist:

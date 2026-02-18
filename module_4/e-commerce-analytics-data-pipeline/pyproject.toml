@@ -23,5 +23,6 @@ build-backend = "poetry.core.masonry.api"
 [dependency-groups]
 dev = [
     "types-redis (>=4.6.0.20241004,<5.0.0.0)",
-    "mypy (>=1.19.1,<2.0.0)"
+    "mypy (>=1.19.1,<2.0.0)",
+    "pytest (>=9.0.2,<10.0.0)"
 ]
