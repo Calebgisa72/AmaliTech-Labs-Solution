@@ -11,6 +11,7 @@ services:
     environment:
       - POSTGRES_HOST=db
       - REDIS_HOST=redis
+      - POSTGRES_PORT=5432
     depends_on:
       db:
         condition: service_healthy
@@ -48,6 +49,42 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  celery:
+    build: .
+    command: celery -A lab_one_url_shortener worker -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_HOST=db
+      - REDIS_HOST=redis
+      - POSTGRES_PORT=5432
+    depends_on:
+      - db
+      - redis
+      - web
+    networks:
+      - app-network
+
+  celery-beat:
+    build: .
+    command: celery -A lab_one_url_shortener beat -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_HOST=db
+      - REDIS_HOST=redis
+      - POSTGRES_PORT=5432
+    depends_on:
+      - db
+      - redis
+      - web
+    networks:
+      - app-network
 
 networks:
   app-network:

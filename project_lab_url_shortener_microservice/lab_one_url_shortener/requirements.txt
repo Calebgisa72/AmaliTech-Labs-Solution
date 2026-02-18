@@ -9,3 +9,5 @@ sqlparse
 tzdata
 psycopg2-binary
 djangorestframework-simplejwt
+python-json-logger
+celery

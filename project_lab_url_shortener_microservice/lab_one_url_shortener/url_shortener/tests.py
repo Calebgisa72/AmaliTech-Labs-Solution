@@ -4,9 +4,10 @@ from .services import UrlShortenerService
 from .models import URL, UserClick
 from django.contrib.auth import get_user_model
 import json
-
-
+from django.urls import reverse
+from rest_framework import status
 from .repositories import URLRepository
+
 
 User = get_user_model()
 
@@ -41,7 +42,7 @@ class UrlShortenerServiceTests(TestCase):
         short_code = create_result["short_code"]
 
         get_result = self.service.get_original_url(short_code)
-        self.assertEqual(get_result.original_url, original_url)
+        self.assertEqual(get_result["original_url"], original_url)
 
     def test_record_click_creates_record(self):
         original_url = "https://clickme.com"
@@ -133,3 +134,68 @@ class UrlShortenerServiceTests(TestCase):
         clicks = self.service.get_user_clicks(ip)
         self.assertEqual(len(clicks), 1)
         self.assertEqual(clicks[0]["short_code"], url["short_code"])
+
+
+class RedirectURLViewTests(TestCase):
+    def setUp(self):
+        self.repo = URLRepository()
+        self.service = UrlShortenerService(self.repo)
+        self.user = User.objects.create_user(username="testuser", password="password")
+
+    def test_redirect_view_redirects_correctly(self):
+        original_url = "https://example.com"
+        result = self.service.shorten_url(original_url, owner=self.user)
+        short_code = result["short_code"]
+
+        url = reverse("redirect_url", kwargs={"identifier": short_code})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
+        self.assertEqual(response.url, original_url)
+
+    def test_redirect_increases_click_count_and_creates_user_click(self):
+        # Force eager execution for this test
+        from lab_one_url_shortener.celery import app
+
+        app.conf.update(task_always_eager=True)
+
+        original_url = "https://trackme.com"
+        result = self.service.shorten_url(original_url, owner=self.user)
+        short_code = result["short_code"]
+
+        # Verify initial state
+        url_obj = URL.objects.get(short_code=short_code)
+        self.assertEqual(url_obj.click_count, 0)
+        self.assertEqual(UserClick.objects.count(), 0)
+
+        # Perform request
+        url = reverse("redirect_url", kwargs={"identifier": short_code})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
+
+        # Refresh from DB
+        url_obj.refresh_from_db()
+
+        # Verify click count increased
+        self.assertEqual(url_obj.click_count, 1)
+
+        # Verify UserClick record created
+        self.assertTrue(UserClick.objects.filter(url=url_obj).exists())
+
+        # Reset configuration
+        app.conf.update(task_always_eager=False)
+
+    @patch("url_shortener.tasks.track_click_task.delay")
+    def test_redirect_calls_celery_task(self, mock_task):
+        original_url = "https://async-track.com"
+        result = self.service.shorten_url(original_url, owner=self.user)
+        short_code = result["short_code"]
+
+        url = reverse("redirect_url", kwargs={"identifier": short_code})
+        self.client.get(url)
+
+        # Verify task was called
+        mock_task.assert_called_once()
+        call_kwargs = mock_task.call_args[1]
+        self.assertEqual(call_kwargs["identifier"], short_code)
