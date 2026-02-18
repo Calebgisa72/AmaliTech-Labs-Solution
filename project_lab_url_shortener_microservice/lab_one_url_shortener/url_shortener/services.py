@@ -116,11 +116,6 @@ class UrlShortenerService:
                 identifier, user_ip, user_agent, referrer, city, country
             )
 
-            # Invalidate Caches
-            CachingService.delete_cached_url(identifier)
-            redis_client = get_redis_client()
-            redis_client.delete("top_clicked_urls")
-
             return new_click
         except URL.DoesNotExist:
             return None
@@ -179,6 +174,10 @@ class UrlShortenerService:
                     "original_url": click.url.original_url,
                     "clicked_at": click.clicked_at.isoformat(),
                     "user_ip": click.user_ip,
+                    "city": click.city,
+                    "country": click.country,
+                    "user_agent": click.user_agent,
+                    "referrer": click.referrer,
                 }
             )
         return results
