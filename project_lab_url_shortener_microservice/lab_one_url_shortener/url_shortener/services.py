@@ -181,3 +181,23 @@ class UrlShortenerService:
                 }
             )
         return results
+
+    def get_analytics(self, url_obj: URL, user: "User"):
+        data = {
+            "total_clicks": url_obj.click_count,
+            "created_at": url_obj.created_at,
+            "original_url": url_obj.original_url,
+            "short_code": url_obj.short_code,
+        }
+
+        if user.tier == "Premium":
+            clicks_over_time = self.url_repository.get_clicks_over_time(
+                url_obj.short_code
+            )
+            clicks_by_country = self.url_repository.get_clicks_per_country(
+                url_obj.short_code
+            )
+            data["clicks_over_time"] = clicks_over_time
+            data["clicks_by_country"] = clicks_by_country
+
+        return data

@@ -13,6 +13,16 @@ from .repositories import URLRepository
 from rest_framework.permissions import IsAuthenticated
 from core.permissions import IsOwnerOrReadOnly
 
+from rest_framework import generics
+from rest_framework.pagination import PageNumberPagination
+from .models import URL
+
+
+class URLPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
 
 class URLView(APIView):
     permission_classes = [IsAuthenticated]
@@ -169,3 +179,38 @@ def get_user_clicks(request):
     service = UrlShortenerService(repo)
     results = service.get_user_clicks(user_ip)
     return Response(results, status=status.HTTP_200_OK)
+
+
+class URLListView(generics.ListAPIView):
+    serializer_class = URLSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = URLPagination
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = URL.objects.filter(owner=user)
+
+        tag = self.request.query_params.get("tag")
+        if tag:
+            queryset = queryset.filter(tags__name=tag)
+
+        return queryset
+
+
+class URLAnalyticsView(APIView):
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get(self, request, identifier):
+        repo = URLRepository()
+        obj = repo.get_by_short_code_or_custom_alias(identifier)
+        if not obj:
+            return Response(
+                {"message": "URL not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        self.check_object_permissions(request, obj)
+
+        service = UrlShortenerService(repo)
+        analytics = service.get_analytics(obj, request.user)
+
+        return Response(analytics, status=status.HTTP_200_OK)
