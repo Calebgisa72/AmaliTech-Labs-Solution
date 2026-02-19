@@ -11,6 +11,9 @@ if TYPE_CHECKING:
     from core.models import User
 
 
+from django.db.models.functions import TruncDay
+
+
 class URLRepository:
     def get_by_short_code(self, short_code: str):
         return (
@@ -127,4 +130,19 @@ class URLRepository:
             queryset.values("country")
             .annotate(total_clicks=Count("id"))
             .order_by("-total_clicks")
+        )
+
+    def get_clicks_over_time(self, identifier: str | None = None):
+        queryset = UserClick.objects.all()
+
+        if identifier:
+            queryset = queryset.filter(
+                Q(url__short_code=identifier) | Q(url__custom_alias=identifier)
+            )
+
+        return (
+            queryset.annotate(date=TruncDay("clicked_at"))
+            .values("date")
+            .annotate(total_clicks=Count("id"))
+            .order_by("date")
         )
