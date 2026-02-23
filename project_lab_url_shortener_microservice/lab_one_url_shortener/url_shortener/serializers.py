@@ -32,6 +32,9 @@ class URLSerializer(serializers.ModelSerializer):
             "created_at",
             "click_count",
             "updated_at",
+            "title",
+            "description",
+            "favicon",
         ]
 
     tags = serializers.SlugRelatedField(

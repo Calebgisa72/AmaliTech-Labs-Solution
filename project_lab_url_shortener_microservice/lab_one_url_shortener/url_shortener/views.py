@@ -1,3 +1,4 @@
+from rest_framework.permissions import AllowAny
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -16,6 +17,9 @@ from core.permissions import IsOwnerOrReadOnly
 from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
 from .models import URL
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class URLPagination(PageNumberPagination):
@@ -67,7 +71,12 @@ class URLView(APIView):
 
 
 class RedirectURLView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
     def get(self, request, identifier):
+
+        logger.info(f"Redirecting to {identifier}")
         repo = URLRepository()
         service = UrlShortenerService(repo)
         url_data = service.get_original_url(identifier)

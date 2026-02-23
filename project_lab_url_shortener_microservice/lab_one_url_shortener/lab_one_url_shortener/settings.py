@@ -55,6 +55,7 @@ AUTH_USER_MODEL = "core.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "core.middleware.LoggingMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -226,5 +227,12 @@ LOGGING = {
             "level": "WARNING",
             "propagate": False,
         },
+        "url_shortener": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }
+
+PREVIEW_API_URL = os.getenv("PREVIEW_API_URL", "http://127.0.0.1:8001/api/preview/")

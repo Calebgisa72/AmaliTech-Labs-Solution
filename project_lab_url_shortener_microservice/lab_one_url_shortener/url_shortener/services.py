@@ -5,6 +5,7 @@ from .repositories import URLRepository
 from .models import URL
 from .helpers import generate_short_code
 from .redis_client import get_redis_client
+from .preview_service import FetchPreviewService
 import json
 
 from typing import TYPE_CHECKING
@@ -56,14 +57,17 @@ class UrlShortenerService:
         owner: "User",  # To avoid circular import
         custom_alias: str | None = None,
         expires_at: str | None = None,
-        title: str | None = None,
-        description: str | None = None,
-        favicon: str | None = None,
         tags: list | None = None,
     ):
         existing = self.url_repository.get_by_original_url(original_url)
         if existing:
             return URLSerializer(existing).data
+
+        preview_data = FetchPreviewService.fetch_preview_data(original_url)
+
+        title = preview_data.get("title")
+        description = preview_data.get("description")
+        favicon = preview_data.get("favicon")
 
         while True:
             short_code = generate_short_code()
