@@ -1,7 +1,7 @@
 services:
   web:
     build: .
-    command: gunicorn lab_one_url_shortener.wsgi:application --bind 0.0.0.0:8000 --reload
+    command: gunicorn lab_one_url_shortener.wsgi:application --bind 0.0.0.0:8000 --workers 3 --reload
     volumes:
       - .:/app
     ports:
@@ -12,11 +12,19 @@ services:
       - POSTGRES_HOST=db
       - REDIS_HOST=redis
       - POSTGRES_PORT=5432
+      - PREVIEW_API_URL=http://url-preview:8001/api/preview/
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - app-network
+
+  url-preview:
+    build: ../url_preview
+    ports:
+      - "8001:8001"
     networks:
       - app-network
 
@@ -61,6 +69,7 @@ services:
       - POSTGRES_HOST=db
       - REDIS_HOST=redis
       - POSTGRES_PORT=5432
+      - PREVIEW_API_URL=http://url-preview:8001/api/preview/
     depends_on:
       - db
       - redis
@@ -79,6 +88,7 @@ services:
       - POSTGRES_HOST=db
       - REDIS_HOST=redis
       - POSTGRES_PORT=5432
+      - PREVIEW_API_URL=http://url-preview:8001/api/preview/
     depends_on:
       - db
       - redis

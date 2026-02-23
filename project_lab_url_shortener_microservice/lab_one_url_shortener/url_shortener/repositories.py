@@ -42,7 +42,7 @@ class URLRepository:
             .select_related("owner")
             .prefetch_related("tags")
             .first()
-        )
+        ) 
 
     def create_url(
         self,
