@@ -110,7 +110,7 @@ To run tests against the microservices, ensure you have activated your virtual e
 2.  Run pytest at the root or specific applications:
     ```bash # Run all tests in the main backend service
     cd lab_one_url_shortener
-    pytest
+    python manage.py test url_shortener.tests
 
         # Run tests for preview service
         cd ../url_preview
