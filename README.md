@@ -16,7 +16,7 @@ The following table provides a high-level summary of the labs completed in this 
 | **Module 3** | **[Student Grade Analytics](module_3/student_grade_analytics_tool)**           | CLI tool for analyzing student grades using advanced collections and generating JSON reports. | Advanced Collections, Dataclasses, IO Context Managers              | `python -m student_analytics.main`                           |
 | **Module 3** | **[Log File Analyzer](module_3/log-file-analyzer)**                            | CLI tool for parsing and analyzing web server logs for insights.                              | Regex, Generators, Functional Programming                           | `python -m log_file_analyzer.main`                           |
 | **Module 4** | **[E-Commerce Analytics](module_4/e-commerce-analytics-data-pipeline)**        | Polyglot data pipeline with SQL/NoSQL integration and complex analytics.                      | Postgres, Redis, MongoDB, JSONB, ETL                                | _(See Lab README)_                                           |
-| **Module 5** | **[URL Shortener Microservice](module_5/lab_one_url_shortener)**               | URL shortener with Redis storage and Docker containerization.                                 | Django DRF, Redis, Docker, Swagger                                  | `docker-compose up --build`                                  |
+| **Module 5** | **[URL Shortener Microservices](project_lab_url_shortener_microservice)**      | Distributed URL shortener backend and web scraping preview microservice.                      | Django DRF, Celery, Redis, Postgres, Docker                         | `docker-compose up --build -d`                               |
 
 ## 🚀 Getting Started
 
