@@ -108,16 +108,18 @@ To run tests against the microservices, ensure you have activated your virtual e
     venv\Scripts\activate  # Windows
     ```
 2.  Run pytest at the root or specific applications:
-    ```bash # Run all tests in the main backend service
+
+    ````bash # Run all tests in the main backend service
     cd lab_one_url_shortener
     python manage.py test url_shortener.tests
 
         # Run tests for preview service
         cd ../url_preview
-        pytest
+        python manage.py test url_preview.tests
         ```
 
     _(Make sure to apply database migrations or run inside an active docker test container if integration tests require db connections)_
+    ````
 
 ---
 
